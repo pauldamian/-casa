@@ -15,12 +15,12 @@ def cancel(command):
         pass # to be replaced with logging message
     else:
         pass
-    
+
 def schedule(command):
     key = command.timestamp.ctime().split()[0]
     _command_schedule[key].append(command)
     _latest_command = command
-    
+
 def undo():
     if _latest_command is not None:
         cancel(_latest_command)
