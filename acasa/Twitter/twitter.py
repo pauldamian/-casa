@@ -5,16 +5,13 @@ Created on Mar 19, 2016
 '''
 from twython import Twython
 from twython.exceptions import TwythonError
-from acasa.Utils import log
 from datetime import datetime
 from time import sleep
 
-C_KEY = "yOWulVMIqlC9noF78hV18UCGk"
-C_SECRET = "Zv8UbP4zdfkgvO64f2nLciAIXB7IzxYGWGkC5sHsKtWz3lLmDF"
-A_TOKEN = "711269927114694656-JltJotMXw7eOLA5wJR5SxeSAn58JpbS"
-A_SECRET = "nYC9mGcsquOc4AVRSMIuKWwNSCegfhI6eWAeGYrEcDKTf"
+from Utils import log
+from Utils import resources as r
 
-tweet = Twython(C_KEY, C_SECRET, A_TOKEN, A_SECRET)
+tweet = Twython(r.C_KEY, r.C_SECRET, r.A_TOKEN, r.A_SECRET)
 valid_commands = ['execute', 'help'] # turn to sets
 
 executed_commands = []
