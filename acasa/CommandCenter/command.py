@@ -5,13 +5,19 @@ Created on 28 mar. 2016
 '''
 import datetime
 # commands mapping
-commands = {}
+commands = {'dim'}
 
 
 class Command:
     #    _command_schedule = {'Mon':[], 'Tue':[], 'Wed':[], 'Thu':[], 'Fri':[], 'Sat':[], 'Sun':[]}
-    def __init__(self, schedule_time=None):
-        if schedule_time is not None:
-            self.timestamp = datetime.datetime.now()
+    def __init__(self, cid, order, data, commander, args=None):
+        if args is None:
+            self.schedule = datetime.datetime.now()
+            self.args = ''
         else:
-            self.timestamp = schedule_time
+            self.schedule = schedule_time
+        self.order = message.lower()
+        self.cid = cid
+        self.date = data
+        self.commander = commander 
+        return self
