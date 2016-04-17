@@ -3,21 +3,23 @@ Created on 28 mar. 2016
 
 @author: Paul
 '''
-import datetime
+from datetime import datetime
 # commands mapping
-commands = {'dim'}
+valid_commands = ['dim', 'help', 'lock', 'unlock', 'show']
 
 
 class Command:
     #    _command_schedule = {'Mon':[], 'Tue':[], 'Wed':[], 'Thu':[], 'Fri':[], 'Sat':[], 'Sun':[]}
     def __init__(self, cid, order, data, commander, args=None):
+        if (order.lower().split()[0] not in valid_commands) or (order.lower().split()[0] == 'help'):
+            self.cid = 0
+            return
         if args is None:
-            self.schedule = datetime.datetime.now()
+            self.schedule = datetime.now()
             self.args = ''
         else:
-            self.schedule = schedule_time
-        self.order = message.lower()
+            self.schedule = datetime.now()
+        self.order = order.lower()
         self.cid = cid
-        self.date = data
-        self.commander = commander 
-        return self
+        self.data = data
+        self.commander = commander
