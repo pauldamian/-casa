@@ -3,10 +3,10 @@ Created on 20 apr. 2016
 
 @author: Paul
 '''
-from Utils import log
-from Twitter import twitter
-from GipaInternet import meteo
-from CommandCenter import laverdadb, executor
+import log
+import twitter
+import meteo
+import executor
 
 import time
 import multiprocessing
@@ -14,7 +14,7 @@ import multiprocessing
 if __name__ == "__main__":
     processes = []
     
-    for func in [twitter.run, executor.run, meteo.run]:
+    for func in [twitter.run, executor.run]:
         processes.append(multiprocessing.Process(target=func))
         processes[-1].start()
         log.write("Process %s started" % func.__class__)
