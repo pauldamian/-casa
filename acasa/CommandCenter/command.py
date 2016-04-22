@@ -23,3 +23,4 @@ class Command:
         self.cid = cid
         self.data = data
         self.commander = commander
+        self.status = 'NEW'
