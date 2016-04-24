@@ -28,13 +28,13 @@ class laverdadb:
             log.write('Command already in the database.')
 
     def read_current_commands(self):
-        now = datetime.now()
-        floor = now.replace(second=0, microsecond=0)
-        if floor.minute == 59:
-            ceil = floor.replace(hour=floor.hour + 1, minute=0)
-        else:
-            ceil = floor.replace(minute=floor.minute + 1)
-        ttime = (str(floor), str(ceil))
+#         now = datetime.now()
+#         floor = now.replace(second=0, microsecond=0)
+#         if floor.minute == 59:
+#             ceil = floor.replace(hour=floor.hour + 1, minute=0)
+#         else:
+#             ceil = floor.replace(minute=floor.minute + 1)
+#         ttime = (str(floor), str(ceil))
         res = []
         # WHERE schedule BETWEEN datetime(?) AND datetime(?)
         for row in self.curs.execute("SELECT * FROM commands WHERE status='NEW'").fetchall():

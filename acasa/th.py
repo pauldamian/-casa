@@ -1,5 +1,3 @@
-import sys
-from time import sleep
 import Adafruit_DHT
 
 pin = 23    #GPIO Pin
