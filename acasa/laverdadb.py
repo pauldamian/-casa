@@ -13,8 +13,14 @@ class laverdadb:
         (cid INTEGER UNIQUE, message TEXT, data TEXT, schedule TEXT, commander TEXT, status TEXT);')
 
     def get_latest_id(self):
-        self.curs.execute('select cid from commands order by cid desc limit 1;')
-        return int(self.curs.fetchone()[0])
+        self.curs.execute('select cid from commands where status is "COMPLETED" \
+                            order by cid desc limit 1;')
+        try:
+            id = int(self.curs.fetchone()[0])
+        except TypeError:
+            id = 0
+            log.write("New deployment")
+        return id
     
     def insert_command(self, com):
         # query = "INSERT INTO commands VALUES({0},'{1}','{2}','{3}','{4}')".format(int(com.cid), com.order, com.data, com.schedule, com.commander)
@@ -38,7 +44,14 @@ class laverdadb:
         res = []
         # WHERE schedule BETWEEN datetime(?) AND datetime(?)
         for row in self.curs.execute("SELECT * FROM commands WHERE status='NEW'").fetchall():
-            c = Command(row[0], row[1], row[2], row[4])
+            message = row[1]
+            if len(message.split()) > 1:
+                order = message.split()[0]
+                arg = message.split()[1]
+            else:
+                order = row[1]
+                arg = ''
+            c = Command(row[0], order, row[2], row[4], args=arg)
             res.append(c)
         return res
 

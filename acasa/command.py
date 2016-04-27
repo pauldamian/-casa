@@ -5,12 +5,12 @@ Created on 28 mar. 2016
 '''
 from datetime import datetime
 # commands mapping
-valid_commands = ['dim', 'help', 'lock', 'unlock', 'show']
+valid_commands = ['lights', 'help', 'lock', 'unlock', 'show']
 
 
 class Command:
     #    _command_schedule = {'Mon':[], 'Tue':[], 'Wed':[], 'Thu':[], 'Fri':[], 'Sat':[], 'Sun':[]}
-    def __init__(self, cid, order, data, commander,status='NEW', args=None):
+    def __init__(self, cid, order, data, commander, status='NEW', args=None):
         if (order.lower().split()[0] not in valid_commands) or (order.lower().split()[0] == 'help'):
             self.cid = 0
             return
@@ -19,6 +19,7 @@ class Command:
             self.args = ''
         else:
             self.schedule = datetime.now()
+            self.args = args
         self.order = order.lower()
         self.cid = cid
         self.data = data

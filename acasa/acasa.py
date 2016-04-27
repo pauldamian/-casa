@@ -5,8 +5,8 @@ Created on 20 apr. 2016
 '''
 import log
 import twitter
-import meteo
 import executor
+import dim
 
 import time
 import multiprocessing

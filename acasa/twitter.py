@@ -27,18 +27,18 @@ def send_help(commander):
     notify(text, commander)
 
 
-def register_command(cid, message, data, commander):
-    if cid in seen_messages:  # to be moved in command execution logic
-        # log.write("Command %s was executed already" % message)
-        return
+def register_command(cid, message, data, commander, status='NEW'):
+##    if cid in seen_messages:  # to be moved in command execution logic
+##        # log.write("Command %s was executed already" % message)
+##        return
+##    else:
+    com = Command(cid, message, data, commander, status)
+##        seen_messages.append(cid)
+    if(com.cid == 0):
+        log.write("%s is not a valid command. Check the set of valid commands" % message)
+        send_help(commander)
     else:
-        com = Command(cid, message, data, commander)
-        seen_messages.append(cid)
-        if(com.cid == 0):
-            log.write("%s is not a valid command. Check the set of valid commands" % message)
-            send_help(commander)
-        else:
-            db.insert_command(com)
+        db.insert_command(com)
 
 
 def notify(message, username):
@@ -76,11 +76,16 @@ def notify(message, username):
 
 def register_latest_commands():
     lid = db.get_latest_id()
-    new_messages = tweet.get_direct_messages(since_id=lid)
-    # new_messages = latest_messages(messages)
+    if( lid > 0):
+        new_messages = tweet.get_direct_messages(since_id=lid)
+        status = 'NEW'
+    else:
+        new_messages = tweet.get_direct_messages(count=1)
+        status = 'COMPLETED'
+##        new_messages = latest_messages(messages)
     for message in new_messages:
         data = datetime.datetime.strptime(message['created_at'], '%a %b %d %H:%M:%S +%f %Y')
-        register_command(message['id'], message['text'].strip(), str(data), message['sender']['screen_name'])
+        register_command(message['id'], message['text'].strip(), str(data), message['sender']['screen_name'], status)
 
 
 def run():
