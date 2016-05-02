@@ -5,5 +5,6 @@ Created on 4 apr. 2016
 '''
 import requests
 
+
 def get_response(request_url):
     return requests.get(request_url).json()

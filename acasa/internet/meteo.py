@@ -4,13 +4,15 @@ Created on 4 apr. 2016
 @author: Paul
 '''
 import internet
-from resources import APPID
+from acasa.resources import APPID
 import time
 
 KELVIN_TO_CELSIUS = 273.15
 
+
 def seconds_to_time(seconds):
     return time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(seconds))
+
 
 class Meteo():
     def __init__(self, vreme):
