@@ -1,4 +1,7 @@
-import RPi.GPIO as gp
+try:
+    import RPi.GPIO as gp
+except ImportError:
+    print "Running compatibility mode"
 from time import sleep
 
 """

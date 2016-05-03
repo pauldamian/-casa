@@ -32,18 +32,31 @@ class laverdadb:
         except sqlite3.IntegrityError:
             log.write('Command already in the database.')
 
+    def to_command(self, row):
+        message = row[1]
+        if len(message.split()) > 1:
+            order = message.split()[0]
+            arg = message.split(' ', 1)[1]
+        else:
+            order = row[1]
+            arg = ''
+        c = Command(row[0], order, row[2], row[4], args=arg)
+        return c
+
+    def cancel_command(self, text):
+#        self.update_command_status(ccid, 'IN PROGRESS')
+        if text == 'all':
+            for cid in self.curs.execute("SELECT cid FROM commands WHERE status='NEW'").fetchall():
+                self.update_command_status(cid[0], 'CANCELLED')
+        else:
+            for cid in self.curs.execute("SELECT cid FROM commands WHERE message IS ? AND status='NEW'", (text,)).fetchall():
+                self.update_command_status(cid[0], 'CANCELLED')
+#        self.update_command_status(ccid, 'COMPLETED')
+
     def read_current_commands(self):
         res = []
         for row in self.curs.execute("SELECT * FROM commands WHERE status='NEW'").fetchall():
-            message = row[1]
-            if len(message.split()) > 1:
-                order = message.split()[0]
-                arg = message.split()[1]
-            else:
-                order = row[1]
-                arg = ''
-            c = Command(row[0], order, row[2], row[4], args=arg)
-            res.append(c)
+            res.append(self.to_command(row))
         return res
 
     def update_command_status(self, cid, status):
@@ -51,6 +64,7 @@ class laverdadb:
         try:
             self.curs.execute('UPDATE commands SET status=? WHERE cid=?', q)
             self.conn.commit()
+            log.write("Command %s was marked as %s" % (cid, status))
         except sqlite3.OperationalError:
             log.write("The command %s probably executed, but failed to update its status")
 

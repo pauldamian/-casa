@@ -8,9 +8,10 @@ from laverdadb import get_db_instance
 import log
 from twitter import notify
 from time import sleep
-from scripts.th import instant_th
-from scripts import dim
+from things import dim
+from things.th import instant_th
 
+db = get_db_instance()
 
 # def show_temp(*args):
 #     temp, _ = instant_th()
@@ -59,23 +60,30 @@ def lights(arg):
     return 'Ok'
 
 
+def cancel(args):
+    db.cancel_command(args)
+    return 'Command canceled'
+
+
 def execute_command(command):
     log.write("Command %s will be executed now" % command.order)
 #    c = command.order.replace(' ', '_')
     com = {'show': show,
-           'lights': lights
+           'lights': lights,
+           'cancel': cancel
            }
     res = com[command.order](command.args)
     notify(res, command.commander)
 
 
 def run():
-    db = get_db_instance()
     while True:
         commands = db.read_current_commands()
         for command in commands:
             db.update_command_status(command.cid, 'IN PROGRESS')
             execute_command(command)
             db.update_command_status(command.cid, 'COMPLETED')
+            if command.order == 'cancel':
+                break
             log.write('command %s executed successfully' % command.order)
         sleep(5)

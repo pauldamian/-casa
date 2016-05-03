@@ -6,7 +6,6 @@ Created on 20 apr. 2016
 import log
 import twitter
 import executor
-from scripts import dim
 
 import time
 import multiprocessing

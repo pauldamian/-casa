@@ -33,6 +33,8 @@ def register_command(cid, message, data, commander, status='NEW'):
         send_help(commander)
     else:
         db.insert_command(com)
+#         if com.order.split()[0] == 'cancel':
+#             db.cancel_command(cid, message.split(' ', 1)[1])
 
 
 def notify(message, username):
