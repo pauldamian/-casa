@@ -43,7 +43,6 @@ def show(arg):
         _, hum = instant_th()
         return 'Humidity is ' + str(hum) + '%'
 
-
 def lights(arg):
     # Controls the lights
     try:
@@ -55,8 +54,9 @@ def lights(arg):
     except ValueError:
         if arg == 'on':
             level = 100
-        level = 0
-    dim(level)
+        else:
+            level = 0
+    dim.set_dim_level(level)
     return 'Ok'
 
 
@@ -77,6 +77,7 @@ def execute_command(command):
 
 
 def run():
+    log.write('Executor process started')
     while True:
         commands = db.read_current_commands()
         for command in commands:
@@ -86,4 +87,5 @@ def run():
             if command.order == 'cancel':
                 break
             log.write('command %s executed successfully' % command.order)
+        
         sleep(5)

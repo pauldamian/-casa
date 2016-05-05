@@ -65,8 +65,9 @@ class laverdadb:
             self.curs.execute('UPDATE commands SET status=? WHERE cid=?', q)
             self.conn.commit()
             log.write("Command %s was marked as %s" % (cid, status))
-        except sqlite3.OperationalError:
-            log.write("The command %s probably executed, but failed to update its status")
+        except sqlite3.OperationalError as oe:
+            print oe
+            log.write("The command %s probably executed, but failed to update its status" % cid)
 
 db_instance = laverdadb()
 

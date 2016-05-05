@@ -13,29 +13,58 @@ Pin 7 - SYNC - PWM
 Pin 11 - GATE - Digital
 """
 
+dimming= 100
 AC_LOAD = 11
 SYNC = 7
-dimming = 100
-FREQ = 50 # Hz
 
 
-def zero_cross_int(arg):
+##def _zero_cross_int(args):
+##    global dimming
+##    idle_time = dimming * 0.0001
+##    sleep(idle_time)
+##    gp.output(AC_LOAD, True)
+##    sleep(0.00001)
+##    gp.output(AC_LOAD, False)
+
+##def _zero_cross_int(arg):
+##    global dimming
+##    idle_time = dimming * 0.0001
+##    if idle_time != 0:
+##        gp.output(AC_LOAD, False)
+##        sleep(idle_time)
+##    if idle_time != 0.01:
+##        gp.output(AC_LOAD, True)
+##    sleep(0.00001)
+##    gp.output(AC_LOAD, False)
+
+
+def _zero_cross_int(arg):
     global dimming
-    dimtime = dimming * 0.0001
-    sleep(dimtime)
-    gp.output(AC_LOAD, True)
+    idle_time = dimming * 0.0001
+    if idle_time == 0:
+        gp.output(AC_LOAD, True)
+        return
+    elif idle_time == 0.01:
+        gp.output(AC_LOAD, False)
+        return
+    else:
+        gp.output(AC_LOAD, False)
+        sleep(idle_time) 
+        gp.output(AC_LOAD, True)
     sleep(0.00001)
     gp.output(AC_LOAD, False)
 
-
-def start():
+def set_dim_level(percent):
     global dimming
-    global level
-    gp.setmode(gp.BOARD)
-    gp.setup(AC_LOAD, gp.OUT)
-    gp.setup(SYNC, gp.IN, pull_up_down=gp.PUD_UP)
-    gp.add_event_detect(SYNC, gp.RISING, callback=zero_cross_int)
+    dimming = 100 - percent
 
+FREQ = 50 # Hz
+gp.setmode(gp.BOARD)
+gp.setup(AC_LOAD, gp.OUT)
+gp.setup(SYNC, gp.IN, pull_up_down=gp.PUD_UP)
+gp.add_event_detect(SYNC, gp.RISING, callback=_zero_cross_int)
 
-def dim(percent):
-    dimming = percent
+##values = range(10,100,10)
+##for value in values:
+##    set_dim_level(value)
+##    sleep(5)
