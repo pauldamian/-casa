@@ -10,12 +10,12 @@ from time import sleep
 
 import log
 import resources as r
-from laverdadb import get_db_instance
+from laverdadb import Laverdadb
 from command import Command
 
 tweet = Twython(r.C_KEY, r.C_SECRET, r.A_TOKEN, r.A_SECRET)
 seen_messages = []
-db = get_db_instance()
+db = Laverdadb()
 
 
 def send_help(commander):
@@ -26,15 +26,18 @@ def send_help(commander):
     notify(text, commander)
 
 
-def register_command(cid, message, data, commander, status='NEW'):
-    com = Command(cid, message, data, commander, status)
-    if(com.cid == 0):
-        log.write("%s is not a valid command. Check the set of valid commands" % message)
-        send_help(commander)
-    else:
-        db.insert_command(com)
-#         if com.order.split()[0] == 'cancel':
-#             db.cancel_command(cid, message.split(' ', 1)[1])
+# def register_command(cid, message, data, commander, status='NEW'):
+#     com = Command(cid, message, data, commander, status)
+#     if com.cid == 0:
+#         log.write("%s is not a valid command. Check the set of valid commands" % message)
+#         send_help(commander)
+#     elif com.cid == -1:
+#         response = 'You are not authorized to perform this command.'
+#         notify(response, commander)
+#     else:
+#         db.insert_command(com)
+#          if com.order.split()[0] == 'cancel':
+#              db.cancel_command(cid, message.split(' ', 1)[1])
 
 
 def notify(message, username):
@@ -53,23 +56,6 @@ def notify(message, username):
     return 0
 
 
-##def latest_messages(messages):
-##    recent_messages = []
-##    month_dict = {"Jan": 1, "Feb": 2, "Mar": 3, "Apr": 4, "May": 5, "Jun": 6,
-##                  "Jul": 7, "Aug": 8, "Sep": 9, "Oct": 10, "Nov": 11, "Dec": 12}
-##    ten_mins_back = datetime.datetime.now() - datetime.timedelta(minutes=190)
-##
-##    for message in messages:
-##        data = message['created_at'] # Sun Mar 20 11:47:28 +0000 2016 strftime
-##        parts = data.split(" ")
-##        hour = parts[3].split(":")
-##        m_date = datetime.datetime(int(parts[5]), month_dict[parts[1]], int(parts[2]),
-##                                   int(hour[0]), int(hour[1]), int(hour[2]))
-##        if ten_mins_back < m_date:
-##            recent_messages.append(message)
-##    return recent_messages
-
-
 def register_latest_commands():
     lid = db.get_latest_id()
     if(lid > 0):
@@ -79,11 +65,24 @@ def register_latest_commands():
         new_messages = tweet.get_direct_messages(count=1)
         status = 'COMPLETED'
     for message in new_messages:
+        # Take commands only from authorized users
+        # These users must be stored in a list called USERS in the resources file
+        username = message['sender']['screen_name']
         data = datetime.datetime.strptime(message['created_at'], '%a %b %d %H:%M:%S +%f %Y')
-        register_command(message['id'], message['text'].strip(), str(data), message['sender']['screen_name'], status)
+        res = db.register_command(message['id'], message['text'].strip(), str(data), username, status)
+        notify(res, username)
 
 
 def run():
     while True:
         register_latest_commands()
         sleep(61)
+
+
+def test_run():
+    while True:
+        lid = db.get_latest_id()
+        message = input('Your wish is my command: ')
+        status = 'NEW'
+        data = datetime.datetime.now()
+        db.register_command(lid + 1, message, data, 'pauldamian8', status)

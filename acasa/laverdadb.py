@@ -4,7 +4,7 @@ from command import Command
 import log
 
 
-class laverdadb:
+class Laverdadb:
     curs = None
     conn = None
 
@@ -12,7 +12,17 @@ class laverdadb:
         self.conn = sqlite3.connect('laverda.db')
         self.curs = self.conn.cursor()
         self.curs.execute('CREATE TABLE IF NOT EXISTS commands \
-        (cid INTEGER UNIQUE, message TEXT, data TEXT, schedule TEXT, commander TEXT, status TEXT);')
+        (cid INTEGER PRIMARY KEY, message TEXT, data TEXT, schedule TEXT, commander TEXT, status TEXT);')
+
+    def get_static_id(self):
+        self.curs.execute('SELECT cid FROM commands WHERE cid < 10000000 \
+                            ORDER BY cid DESC LIMIT 1;')
+        try:
+            sid = int(self.curs.fetchone()[0])
+        except TypeError:
+            sid = 0
+            log.write("New deployment")
+        return sid + 1
 
     def get_latest_id(self):
         self.curs.execute('select cid from commands where status is "COMPLETED" \
@@ -24,13 +34,28 @@ class laverdadb:
             log.write("New deployment")
         return lid
 
+    def register_command(self, cid, message, data, commander, status='NEW', schedule=None):
+        com = Command(cid, message, data, commander, status=status, schedule=schedule)
+        if com.cid == 0:
+            return 'Invalid command'
+        elif com.cid == -1:
+            return 'You are not authorized to perform this command.'
+        if com.cid == -2:
+            return 'Invalid schedule time. Please respect the given format\
+                and make sure that the date is in the future'
+        else:
+            res = self.insert_command(com)
+            return res
+
     def insert_command(self, com):
         c = (int(com.cid), com.order, str(com.data), str(com.schedule), com.commander, com.status)
         try:
             self.curs.execute("INSERT INTO commands VALUES(?, ?, ?, ?, ?, ?);", c)
             self.conn.commit()
+            return 'Command registered successfully'
         except sqlite3.IntegrityError:
             log.write('Command already in the database.')
+        return 'Error registering command. Check logs.'
 
     def to_command(self, row):
         message = row[1]
@@ -44,7 +69,7 @@ class laverdadb:
         return c
 
     def cancel_command(self, text):
-#        self.update_command_status(ccid, 'IN PROGRESS')
+        # self.update_command_status(ccid, 'IN PROGRESS')
         if text == 'all':
             for cid in self.curs.execute("SELECT cid FROM commands WHERE status='NEW'").fetchall():
                 self.update_command_status(cid[0], 'CANCELLED')
@@ -55,7 +80,9 @@ class laverdadb:
 
     def read_current_commands(self):
         res = []
-        for row in self.curs.execute("SELECT * FROM commands WHERE status='NEW'").fetchall():
+        now = str(datetime.now())
+        for row in self.curs.execute("SELECT * FROM commands WHERE status='NEW' AND schedule<? ;",
+                                     (now,)).fetchall():
             res.append(self.to_command(row))
         return res
 
@@ -69,8 +96,6 @@ class laverdadb:
             print oe
             log.write("The command %s probably executed, but failed to update its status" % cid)
 
-db_instance = laverdadb()
-
-
-def get_db_instance():
-    return db_instance
+# db_instance = Laverdadb()
+# def get_db_instance():
+#     return db_instance

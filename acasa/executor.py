@@ -4,35 +4,18 @@ Created on 28 mar. 2016
 @author: Paul
 '''
 # from datetime import datetime
-from laverdadb import get_db_instance
+from laverdadb import Laverdadb
 import log
 from twitter import notify
 from time import sleep
-from things import dim
-from things.th import instant_th
+from __init__ import TEST
 
-db = get_db_instance()
+if not TEST:
+    from things import dim
+    from things.th import instant_th
 
-# def show_temp(*args):
-#     temp, _ = instant_th()
-#     return 'Temperature is ' + str(temp) + '*C'
+db = Laverdadb()
 
-
-# def show_hum(*args):
-#     pass
-# 
-# def lights_on(*args):
-#     dim(0)
-#     return 'Ok'
-# 
-# def lights_off(*args):
-#     dim(99)
-#     return 'Ok'
-# 
-# def dimm(*args):
-#     level = args[0]
-#     dim(level)
-#     return 'Ok'
 
 def show(arg):
     # Displays sensor readings
@@ -42,6 +25,7 @@ def show(arg):
     elif arg == 'hum':
         _, hum = instant_th()
         return 'Humidity is ' + str(hum) + '%'
+
 
 def lights(arg):
     # Controls the lights
@@ -87,5 +71,4 @@ def run():
             if command.order == 'cancel':
                 break
             log.write('command %s executed successfully' % command.order)
-        
         sleep(5)
