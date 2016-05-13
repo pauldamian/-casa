@@ -11,6 +11,7 @@ import sys
 import getopt
 from resources import USERS
 import calendar
+from croniter import croniter
 
 db = Laverdadb()
 
@@ -107,7 +108,7 @@ Example: scheduler.py -c "lights on" -t "2016-05-07 14:43:50"
             elif opt == '-t':
                 st = arg
         if st == 'now' or st is None:
-            st = dt.now()
+            st = str(dt.now()).split('.')[0]
         cid = db.get_static_id()
         res = db.register_command(cid, com, dt.now(), user, schedule=st)
         print res
@@ -146,17 +147,17 @@ Example: scheduler.py -c "lights on" -t "2016-05-07 14:43:50"
                 if et is not None:
                     if et > st:
                         break
-            while True:
-                print '''
+            print '''
         For the recurrence part, you can use keywords as:
         every [minute/hour/day/<weekday_name>/week/month]
-        or use the following format with integers:
-        [year] [month] [day] [weekday] [hour] [minute] [second]
+        or use the following cron format:
+        [minute] [hour] [day] [month] [day_of_week] [seconds]
         you can use the * wildcard for all values and specify ranges using -
         Example: to run a command every Sunday at noon:
         every Sunday (after setting the start time to 12:00:00)
-        * * * 7 12 0 0
+        0 12 * * 7 0
                 '''
+            while True:
                 recurrence = []
                 rec = raw_input('Set recurrence: ').lower()
                 if rec.split()[0] == 'every':
@@ -174,14 +175,14 @@ Example: scheduler.py -c "lights on" -t "2016-05-07 14:43:50"
                         recurrence.append(timedelta(hours=increment))
                     elif cate == 'day':
                         recurrence.append(timedelta(days=increment))
+                    elif cate == 'month':   # months keyword not supported yet
+                        recurrence.append('monthly')
                     elif cate[:3].capitalize() in weekdays.keys():
                         dd = (weekdays[cate[:3].capitalize()] - st.isoweekday()) % 7
                         st = st.replace(day=st.day + dd)
                         recurrence.append(timedelta(days=7 * increment))
                     elif cate == 'week':
                         recurrence.append(timedelta(days=7 * increment))
-                    elif cate == 'month':
-                        recurrence.append('monthly')
                     else:
                         print 'Unsupported unit of time'
                     if len(recurrence) > 0:
@@ -193,53 +194,16 @@ Example: scheduler.py -c "lights on" -t "2016-05-07 14:43:50"
                         break
                 else:
                     try:
-                        y, mo, d, w, h, mi, s = rec.split()
-                        ly = get_valid_input(y)
-                        if ly is not None:
-                            if len(ly) == 1:
-                                st = st.replace(year=ly[0])
-                        else:
-                            ly = range(st.year, et.year + 1)
-                        lmo = get_valid_input(mo)
-                        if lmo is not None:
-                            if len(lmo) == 1:
-                                st = st.replace(month=lmo[0])
-                        else:
-                            lmo = range(st.month, et.month + 1)
-                        ld = get_valid_input(d)
-                        if ld is not None:
-                            if len(ld) == 1:
-                                st = st.replace(day=ld[0])
-                        else:
-                            ld = range(st.year, et.year + 1)
-                        lw = get_valid_input(w)
-                        if lw is None:
-                            lw = range(1, 8)
-                        lh = get_valid_input(h)
-                        if lh is not None:
-                            if len(lh) == 1:
-                                st = st.replace(hour=lh[0])
-                        else:
-                            if st.date() != et.date():
-                                lh = range(0, 24)
-                            else:
-                                lh = range(st.hour, et.hour + 1)
-                        ly = get_valid_input(y)
-                        if ly is not None:
-                            if len(ly) == 1:
-                                st = st.replace(year=ly[0])
-                        else:
-                            ly = range(st.year, et.year + 1)
-                        ly = get_valid_input(y)
-                        if ly is not None:
-                            if len(ly) == 1:
-                                st = st.replace(year=ly[0])
-                        else:
-                            ly = range(st.year, et.year + 1)
+                        mi, h, d, mo, wd, s = rec.split()
+                        itr = croniter(rec, st)
+                        nt = itr.get_next(dt)
+                        while nt <= et:
+                            cid = db.get_static_id()
+                            res = db.register_command(cid, com, dt.now(), user, schedule=str(nt))
+                            nt = itr.get_next(dt)
+                        break
                     except ValueError as ve:
                         print ve.message
-
-                break
                     
 if __name__ == "__main__":
     main(sys.argv[1:])

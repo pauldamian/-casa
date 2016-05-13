@@ -41,7 +41,7 @@ def lights(arg):
         else:
             level = 0
     dim.set_dim_level(level)
-    return 'Ok'
+    return 'Lights turned ' + arg
 
 
 def cancel(args):
