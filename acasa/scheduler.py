@@ -106,6 +106,8 @@ Example: scheduler.py -c "lights on" -t "2016-05-07 14:43:50"
                 com = arg
             elif opt == '-t':
                 st = arg
+        if st == 'now' or st is None:
+            st = dt.now()
         cid = db.get_static_id()
         res = db.register_command(cid, com, dt.now(), user, schedule=st)
         print res
@@ -158,25 +160,36 @@ Begin by choosing one of the available commands from below:'''
                 rec = raw_input('Set recurrence: ').lower()
                 if rec.split()[0] == 'every':
                     cate = rec.split()[1]
+                    try:
+                        increment = int(cate)
+                        cate = rec.split()[2][:-1]
+                    except ValueError:
+                        increment = 1
+                    except IndexError:
+                        print 'You need to provide more arguments (the unit of time, most likely'
                     if cate == 'minute':
-                        recurrence.append(timedelta(minutes=1))
+                        recurrence.append(timedelta(minutes=increment))
                     elif cate == 'hour':
-                        recurrence.append(timedelta(hours=1))
+                        recurrence.append(timedelta(hours=increment))
                     elif cate == 'day':
-                        recurrence.append(timedelta(days=1))
+                        recurrence.append(timedelta(days=increment))
                     elif cate[:3].capitalize() in weekdays.keys():
                         dd = (weekdays[cate[:3].capitalize()] - st.isoweekday()) % 7
                         st = st.replace(day=st.day + dd)
-                        recurrence.append(timedelta(days=7))
+                        recurrence.append(timedelta(days=7 * increment))
                     elif cate == 'week':
-                        recurrence.append(timedelta(days=7))
+                        recurrence.append(timedelta(days=7 * increment))
                     elif cate == 'month':
                         recurrence.append('monthly')
-                    dl = generate_dates(st, et, recurrence)
-                    for d in dl:
-                        cid = db.get_static_id()
-                        res = db.register_command(cid, com, dt.now(), user, schedule=str(d))
-                        print res
+                    else:
+                        print 'Unsupported unit of time'
+                    if len(recurrence) > 0:
+                        dl = generate_dates(st, et, recurrence)
+                        for d in dl:
+                            cid = db.get_static_id()
+                            res = db.register_command(cid, com, dt.now(), user, schedule=str(d))
+                            print res
+                        break
                 else:
                     try:
                         y, mo, d, w, h, mi, s = rec.split()
