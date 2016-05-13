@@ -113,12 +113,12 @@ Example: scheduler.py -c "lights on" -t "2016-05-07 14:43:50"
         print res
     else:
         print '''
-Welcome to the Command Scheduler. This tool enables you to schedule jobs in the future, either for \
-for one-time or recurrent runs.
-Begin by choosing one of the available commands from below:'''
+        Welcome to the Command Scheduler. This tool enables you to schedule jobs,
+        either for one-time or recurrent runs.
+        Begin by choosing one of the available commands from below:'''
         vc = command.valid_commands
         vc.remove('help')
-        print vc
+        print '        ' + str(vc)
         while True:
             com = raw_input('Type the desired command along with its arguments: ')
             if com.split()[0] in vc:
@@ -147,14 +147,15 @@ Begin by choosing one of the available commands from below:'''
                     if et > st:
                         break
             while True:
-                print '''For the recurrence part, you can use keywords as:
-                every [minute/hour/day/<weekday_name>/week/month]
-                or use the following format with integers:
-                [year] [month] [day] [weekday] [hour] [minute] [second]
-                you can use the * wildcard for all values and specify ranges using -
-                Example: to run a command every Sunday at noon:
-                every Sunday (after setting the start time to 12:00:00)
-                * * * 7 12 0 0
+                print '''
+        For the recurrence part, you can use keywords as:
+        every [minute/hour/day/<weekday_name>/week/month]
+        or use the following format with integers:
+        [year] [month] [day] [weekday] [hour] [minute] [second]
+        you can use the * wildcard for all values and specify ranges using -
+        Example: to run a command every Sunday at noon:
+        every Sunday (after setting the start time to 12:00:00)
+        * * * 7 12 0 0
                 '''
                 recurrence = []
                 rec = raw_input('Set recurrence: ').lower()
