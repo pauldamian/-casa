@@ -5,7 +5,7 @@ except ImportError:
 pin = 23    # GPIO Pin
 
 
-def instant_th(steps=10):
+def instant_th(steps=3):
     temps = 0.0
     hums = 0.0
     for i in range(steps):
@@ -16,3 +16,5 @@ def instant_th(steps=10):
         else:
             steps += 1
     return temps / steps, hums / steps
+
+    

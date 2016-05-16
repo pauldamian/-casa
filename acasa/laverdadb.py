@@ -13,6 +13,7 @@ class Laverdadb:
         self.curs = self.conn.cursor()
         self.curs.execute('CREATE TABLE IF NOT EXISTS commands \
         (cid INTEGER PRIMARY KEY, message TEXT, data TEXT, schedule TEXT, commander TEXT, status TEXT);')
+        self.curs.execute('CREATE TABLE IF NOT EXISTS thin (date STRING PRIMARY KEY, temp REAL, hum REAL);')
 
     def get_static_id(self):
         self.curs.execute('SELECT cid FROM commands WHERE cid < 10000000 \
@@ -67,6 +68,25 @@ class Laverdadb:
             arg = ''
         c = Command(row[0], order, row[2], row[4], args=arg)
         return c
+    
+    def insert_reading(self, values):
+        val = (i for i in values)
+        try:
+            self.curs.execute('INSERT INTO thin VALUES (?, ?, ?)', val)
+            self.conn.commit()
+            return 1
+        except sqlite3.IntegrityError:
+            log.write('thin primary key violation')
+        return 0
+    
+    def get_reading(self):
+        self.curs.execute('SELECT AVG(temp), AVG(hum) FROM thin ORDER BY date DESC LIMIT 3;')
+        try:
+            t, h = self.curs.fetchall()
+        except TypeError as te:
+            log.write(te.message)
+        return t, h
+        
 
     def cancel_command(self, text):
         # self.update_command_status(ccid, 'IN PROGRESS')
