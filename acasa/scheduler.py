@@ -3,27 +3,19 @@ Created on 28 mar. 2016
 
 @author: Paul
 '''
+
+import sys
+import getopt
 from datetime import datetime as dt
 from datetime import timedelta
 import command
 from laverdadb import Laverdadb
-import sys
-import getopt
+
 from resources import USERS
-import calendar
 from croniter import croniter
 
 db = Laverdadb()
 
-'''
-tool de programare a comenzilor
-primul ecran: welcome message + selectarea comenzii
-2. when? date, time
-run once or recurrent?
-3. if once: schedule
-4. else: how often?
-
-'''
 weekdays = {'Mon': 1, 'Tue': 2, 'Wed': 3, 'Thu': 4, 'Fri': 5, 'Sat': 6, 'Sun': 7}
 
 

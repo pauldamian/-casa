@@ -19,12 +19,14 @@ db = Laverdadb()
 
 def show(arg):
     # Displays sensor readings
+    try:
+        temp, hum = db.get_reading()
+    except ValueError:
+        return db.get_reading()
     if arg == 'temp':
-        temp, _ = instant_th()
-        return 'Temperature is ' + str(temp) + '*C'
+        return 'Temperature is ' + str("%.1f" % temp) + '*C'
     elif arg == 'hum':
-        _, hum = instant_th()
-        return 'Humidity is ' + str(hum) + '%'
+        return 'Humidity is ' + str("%.1f" % hum) + '%'
 
 
 def lights(arg):

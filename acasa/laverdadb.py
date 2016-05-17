@@ -45,18 +45,20 @@ class Laverdadb:
             return 'Invalid schedule time. Please respect the given format\
                 and make sure that the date is in the future'
         else:
-            res = self.insert_command(com)
-            return res
-
+            return self.insert_command(com)
+            
     def insert_command(self, com):
         c = (int(com.cid), com.order, str(com.data), str(com.schedule), com.commander, com.status)
         try:
             self.curs.execute("INSERT INTO commands VALUES(?, ?, ?, ?, ?, ?);", c)
             self.conn.commit()
-            return 'Command registered successfully'
+            log.write('Command %s registered successfully' % com.order)
+            return 0
         except sqlite3.IntegrityError:
             log.write('Command already in the database.')
-        return 'Error registering command. Check logs.'
+        except sqlite3.OperationaleError as oe:
+            log.write(oe.message)
+        return 1
 
     def to_command(self, row):
         message = row[1]
@@ -70,21 +72,25 @@ class Laverdadb:
         return c
     
     def insert_reading(self, values):
-        val = (i for i in values)
+        val = tuple(values)
         try:
             self.curs.execute('INSERT INTO thin VALUES (?, ?, ?)', val)
             self.conn.commit()
-            return 1
+            return 0
         except sqlite3.IntegrityError:
             log.write('thin primary key violation')
-        return 0
+        except sqlite3.OperationalError as oe:
+            log.write(oe.message)
+        return 1
     
     def get_reading(self):
         self.curs.execute('SELECT AVG(temp), AVG(hum) FROM thin ORDER BY date DESC LIMIT 3;')
         try:
-            t, h = self.curs.fetchall()
+            x = self.curs.fetchone()
+            t, h = x
         except TypeError as te:
             log.write(te.message)
+            return "No sensor readings recorded!"
         return t, h
         
 

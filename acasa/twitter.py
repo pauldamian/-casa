@@ -70,7 +70,8 @@ def register_latest_commands():
         username = message['sender']['screen_name']
         data = datetime.datetime.strptime(message['created_at'], '%a %b %d %H:%M:%S +%f %Y')
         res = db.register_command(message['id'], message['text'].strip(), str(data), username, status)
-        notify(res, username)
+        if res != 0: 
+            notify('Could not register command. Try again later', username)
 
 
 def run():
@@ -82,7 +83,7 @@ def run():
 def test_run():
     while True:
         lid = db.get_latest_id()
-        message = input('Your wish is my command: ')
+        message = raw_input('Your wish is my command: ')
         status = 'NEW'
         data = datetime.datetime.now()
         db.register_command(lid + 1, message, data, 'pauldamian8', status)

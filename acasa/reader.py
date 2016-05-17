@@ -15,5 +15,9 @@ db = Laverdadb()
 def run():
     while True:
         t, h = instant_th()
-        db.insert_reading(str(dt.now()),t, h)
+        values = []
+        values.append(str(dt.now()))
+        values.append(t)
+        values.append(h)
+        db.insert_reading(values)
         sleep(60)
