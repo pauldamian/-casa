@@ -56,7 +56,7 @@ class Laverdadb:
             return 0
         except sqlite3.IntegrityError:
             log.write('Command already in the database.')
-        except sqlite3.OperationaleError as oe:
+        except sqlite3.OperationalError as oe:
             log.write(oe.message)
         return 1
 
