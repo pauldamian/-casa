@@ -2,7 +2,7 @@
 #!/bin/bash
 
 usage() {
-	echo "Usage: 'basename $0' {start|stop|restart|status} [component]" >&2 
+	echo "Usage: $0 {start|stop|restart|status} [component]" >&2 
 	echo "	component in [executor, reader, twitter]" >&2
 }
 
@@ -11,135 +11,85 @@ if [ -z "${1}" ]; then
 	exit 1
 fi
 
-PIDFILE_E="executor.pid"
-PIDFILE_R="reader.pid"
-PIDFILE_T="twitter.pid"
 PROG="acasa"
-
 if [[ ${2} ]]; then
-  # if [[ "${2}" == "executor"]]; then
     PROG=$2;
-  #fi
+    PIDFILE=${PROG}.pid
 fi
 
-# Get the PID from PIDFILE if we don't have one yet.
-if [[ -z "${PID_S}" && -e ${PIDFILE_S} ]]; then
-  PID_S=$(cat ${PIDFILE_S});
-fi
-
-if [[ -z "${PID_T}" && -e ${PIDFILE_T} ]]; then
-  PID_T=$(cat ${PIDFILE_T});
-fi
-
-if [[ -z "${PID_E}" && -e ${PIDFILE_E} ]]; then
-  PID_E=$(cat ${PIDFILE_E});
-fi
-
-
-start_e() {
-  echo "Starting executor (PID written to $PIDFILE_E)."
-  python -c "import executor; executor.run()" & echo $! > ${PIDFILE_E}
-}
-
-start_r() {
-  echo "Starting reader (PID written to $PIDFILE_R)."
-  python -c "import reader; reader.run()" & echo $! > ${PIDFILE_R}
-}
-start_t() {
-  echo "Starting twitter (PID written to $PIDFILE_T)."
-  python -c "import twitter; twitter.run()" & echo $! > ${PIDFILE_T}
+star() {
+	echo "Starting ${1} (PID written to ${1}.pid)."
+  	python -c "import ${1}; ${1}.run()" & echo $! > "${1}.pid"
 }
 start() {
-  if [ ${PROG} == "executor" ]; then
-	start_e
-  elif [  ${PROG} == "reader" ]; then
-	start_r
-  elif [ ${PROG} == "twitter" ]; then
-    start_t
-  elif [ ${PROG} == "acasa" ]; then
-	start_t;
-	start_r;
-	start_e;
+  if [ ${PROG} == "acasa" ]; then
+	star executor;
+	star twitter;
+	star reader;
   else
-	echo "${2} is not a valid component"
+	star ${PROG};
   fi
 }
 
 status() {
   PID=$(cat "${1}.pid");
   if [[ -z "${PID}" ]]; then
-    echo "${PROG} is not running (missing PID)."
+    echo "${1} is not running (missing PID)."
   elif [[ -e /proc/${PID}/exe ]]; then 
-    echo "${PROG} is running (PID: ${PID})."
+    echo "${1} is running (PID: ${PID})."
   else
-    echo "${PROG} is not running (tested PID: ${PID})."
+    echo "${1} is not running (tested PID: ${PID})."
   fi
 }
 
-stop_e() {
-  if [[ -z "${PID_E}" ]]; then
-    echo "executor is not running (missing PID)."
-  elif [[ -e /proc/${PID_E}/exe ]]; then 
-    kill $1 ${PID_E}
+stat() {
+  if [ ${PROG} == "acasa" ]; then
+    status executor
+    status reader
+    status twitter
   else
-    echo "executor is not running (tested PID: ${PID_E})."
-  fi
-}
-
-stop_t() {
-  if [[ -z "${PID_T}" ]]; then
-    echo "twitter is not running (missing PID)."
-  elif [[ -e /proc/${PID_T}/exe ]]; then 
-    kill $1 ${PID_T}
-  else
-    echo "twitter is not running (tested PID: ${PID})."
-  fi
-}
-
-stop_r() {
-  if [[ -z "${PID_R}" ]]; then
-    echo "reader is not running (missing PID)."
-  elif [[ -e /proc/${PID_R}/exe ]]; then 
-    kill $1 ${PID_R}
-  else
-    echo "reader is not running (tested PID: ${PID_R})."
+    status ${PROG}
   fi
 }
 
 stop() {
-  if [ ${PROG} == "executor" ]; then
-	stop_e
-  elif [  ${PROG} == "reader" ]; then
-	stop_r
-  elif [ ${PROG} == "twitter" ]; then
-    stop_t
-  elif [ ${PROG} == "acasa" ]; then
-	stop_t;
-	stop_r;
-	stop_e;
+  PID=$(cat "${1}.pid");
+  PIDFILE=$1.pid
+  if [[ -z "${PIDFILE}" ]]; then
+    echo "${1} is not running (missing PID)."
+  elif [[ -e /proc/${PID}/exe ]]; then 
+    kill ${PID}
+    cat > ${PIDFILE}
   else
-	echo "${2} is not a valid component"
+    echo "${1} is not running (tested PID: ${PID})."
+  fi
+
+}
+
+stp() {
+
+  if [ ${PROG} == "acasa" ]; then
+	stop twitter;
+	stop reader;
+	stop executor;
+  else
+	stop ${PROG}
   fi
 }
 
+
 case "$1" in
   start)
-        start;
+        $1;
         ;;
   restart)
-        stop; sleep 1; start;
+        stp; sleep 1; start;
         ;;
   stop)
-        stop;
-        ;;
-  force-stop)
-        stop -9
-        ;;
-  force-restart)
-        stop -9; sleep 1; start;
+        stp ${PROG};
         ;;
   status)
-        status;
+        stat ${PROG};
         ;;
   *)
         usage;
