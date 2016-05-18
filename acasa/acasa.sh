@@ -66,12 +66,13 @@ start() {
 }
 
 status() {
+  PID=$(cat "${1}.pid");
   if [[ -z "${PID}" ]]; then
     echo "${PROG} is not running (missing PID)."
   elif [[ -e /proc/${PID}/exe ]]; then 
     echo "${PROG} is running (PID: ${PID})."
   else
-    echo "${PROGSHORT} is not running (tested PID: ${PID})."
+    echo "${PROG} is not running (tested PID: ${PID})."
   fi
 }
 
@@ -98,20 +99,26 @@ stop_t() {
 stop_r() {
   if [[ -z "${PID_R}" ]]; then
     echo "reader is not running (missing PID)."
-  elif [[ -e /proc/${PID}/exe ]]; then 
-    kill $1 ${PID}
+  elif [[ -e /proc/${PID_R}/exe ]]; then 
+    kill $1 ${PID_R}
   else
-    echo "reader is not running (tested PID: ${PID})."
+    echo "reader is not running (tested PID: ${PID_R})."
   fi
 }
 
 stop() {
-  if [[ -z "${PID_E}" ]]; then
-    echo "${PROGSHORT} is not running (missing PID)."
-  elif [[ -e /proc/${PID_E}/exe ]]; then 
-    kill $1 ${PID_E}
+  if [ ${PROG} == "executor" ]; then
+	stop_e
+  elif [  ${PROG} == "reader" ]; then
+	stop_r
+  elif [ ${PROG} == "twitter" ]; then
+    stop_t
+  elif [ ${PROG} == "acasa" ]; then
+	stop_t;
+	stop_r;
+	stop_e;
   else
-    echo "Process is not running (tested PID: ${PID})."
+	echo "${2} is not a valid component"
   fi
 }
 
