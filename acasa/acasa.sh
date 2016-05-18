@@ -47,7 +47,7 @@ start_r() {
 }
 start_t() {
   echo "Starting twitter (PID written to $PIDFILE_T)."
-  python -c "import reader; reader.run()" & echo $! > ${PIDFILE_T}
+  python -c "import twitter; twitter.run()" & echo $! > ${PIDFILE_T}
 }
 start() {
   if [ ${PROG} == "executor" ]; then

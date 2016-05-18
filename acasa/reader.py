@@ -19,5 +19,9 @@ def run():
         values.append(str(dt.now()))
         values.append(t)
         values.append(h)
-        db.insert_reading(values)
-        sleep(60)
+        try:
+            db.insert_reading(values)
+            sleep(60)
+        except sqlite3.OperationalError:
+            sleep(10)
+
