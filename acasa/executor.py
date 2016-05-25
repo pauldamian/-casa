@@ -74,7 +74,6 @@ def _forecast(hours):
         w = meteo.get_forecast(h)
         prefix = "The weather in %s hours will be " % h
     message = prefix + "%s with a temperature of %s*" % (w.general, w.temp)
-    print message
     return message
 
 
@@ -85,8 +84,6 @@ def cancel(args):
 
 def execute_command(command):
     log.write("Command %s will be executed now" % command.order)
-    print command.args
-    print command.order
     com = {'show': show,
            'lights': lights,
            'cancel': cancel
@@ -107,5 +104,3 @@ def run():
                 break
             log.write('command %s executed successfully' % command.order)
         sleep(5)
-
-run()
