@@ -64,7 +64,7 @@ def _forecast(hours):
         elif h < 0:
             h = 0
         elif h % 3 != 0:
-            h = 3 * int(h / 3)
+            h = 3 * int((h + 1) / 3)
     except ValueError:
         h = 0
     if h == 0:
@@ -73,7 +73,9 @@ def _forecast(hours):
     else:
         w = meteo.get_forecast(h)
         prefix = "The weather in %s hours will be " % h
-    message = prefix + "%s with a temperature of %s*" % (w.general, w.temp)
+    message = prefix + "%s with a temperature of %s*. " % (w.general, w.temp)
+    if h != 0:
+        message = message + "Chances of rain until then: %s" % w.rain
     return message
 
 

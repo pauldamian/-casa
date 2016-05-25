@@ -26,20 +26,6 @@ def send_help(commander):
     notify(text, commander)
 
 
-# def register_command(cid, message, data, commander, status='NEW'):
-#     com = Command(cid, message, data, commander, status)
-#     if com.cid == 0:
-#         log.write("%s is not a valid command. Check the set of valid commands" % message)
-#         send_help(commander)
-#     elif com.cid == -1:
-#         response = 'You are not authorized to perform this command.'
-#         notify(response, commander)
-#     else:
-#         db.insert_command(com)
-#          if com.order.split()[0] == 'cancel':
-#              db.cancel_command(cid, message.split(' ', 1)[1])
-
-
 def notify(message, username):
     '''
     Notifies the user by sending a direct message on Twitter

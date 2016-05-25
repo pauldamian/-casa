@@ -182,7 +182,8 @@ Example: scheduler.py -c "lights on" -t "2016-05-07 14:43:50"
                         for d in dl:
                             cid = db.get_static_id()
                             res = db.register_command(cid, com, dt.now(), user, schedule=str(d))
-                            print res
+                            print '.',
+                        print 'Done'
                         break
                 else:
                     try:
@@ -193,6 +194,8 @@ Example: scheduler.py -c "lights on" -t "2016-05-07 14:43:50"
                             cid = db.get_static_id()
                             res = db.register_command(cid, com, dt.now(), user, schedule=str(nt))
                             nt = itr.get_next(dt)
+                            print '.',
+                        print 'Done'
                         break
                     except ValueError as ve:
                         print ve.message
