@@ -45,12 +45,13 @@ def lights(intensity):
         elif level < 0:
             level = 0
     except ValueError:
-        if arg == 'on':
+        if intensity == 'on':
             level = 100
         else:
             level = 0
     dim.set_dim_level(level)
-    return 'Lights turned ' + arg
+    return 'Lights turned ' + intensity
+
 
 def _forecast(hours):
     # returns weather forecast
@@ -62,8 +63,8 @@ def _forecast(hours):
             h = 9
         elif h < 0:
             h = 0
-        elif h%3 != 0:
-            h = 3 * int(h/3)
+        elif h % 3 != 0:
+            h = 3 * int(h / 3)
     except ValueError:
         h = 0
     if h == 0:
@@ -75,7 +76,6 @@ def _forecast(hours):
     message = prefix + "%s with a temperature of %s*" % (w.general, w.temp)
     print message
     return message
-    
 
 
 def cancel(args):
@@ -107,3 +107,5 @@ def run():
                 break
             log.write('command %s executed successfully' % command.order)
         sleep(5)
+
+run()
