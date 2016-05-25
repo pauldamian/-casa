@@ -7,6 +7,7 @@ Created on 28 mar. 2016
 from laverdadb import Laverdadb
 import log
 from twitter import notify
+from internet import meteo
 from time import sleep
 from __init__ import TEST
 
@@ -19,6 +20,12 @@ db = Laverdadb()
 
 def show(arg):
     # Displays sensor readings
+    if arg.split()[0] == 'forecast':
+        try:
+            hours = arg.split()[1]
+        except IndexError:
+            hours = 0
+        return _forecast(hours)
     try:
         temp, hum = db.get_reading()
     except ValueError:
@@ -29,10 +36,10 @@ def show(arg):
         return 'Humidity is ' + str("%.1f" % hum) + '%'
 
 
-def lights(arg):
+def lights(intensity):
     # Controls the lights
     try:
-        level = int(arg)
+        level = int(intensity)
         if level > 100:
             level = 100
         elif level < 0:
@@ -45,6 +52,31 @@ def lights(arg):
     dim.set_dim_level(level)
     return 'Lights turned ' + arg
 
+def _forecast(hours):
+    # returns weather forecast
+    # hours refers to the prediction time
+    # possible hours values: 0(now), 3, 6, 9
+    try:
+        h = int(hours)
+        if h > 9:
+            h = 9
+        elif h < 0:
+            h = 0
+        elif h%3 != 0:
+            h = 3 * int(h/3)
+    except ValueError:
+        h = 0
+    if h == 0:
+        w = meteo.get_current_weather()
+        prefix = "The current weather condition is: "
+    else:
+        w = meteo.get_forecast(h)
+        prefix = "The weather in %s hours will be " % h
+    message = prefix + "%s with a temperature of %s*" % (w.general, w.temp)
+    print message
+    return message
+    
+
 
 def cancel(args):
     db.cancel_command(args)
@@ -53,7 +85,8 @@ def cancel(args):
 
 def execute_command(command):
     log.write("Command %s will be executed now" % command.order)
-#    c = command.order.replace(' ', '_')
+    print command.args
+    print command.order
     com = {'show': show,
            'lights': lights,
            'cancel': cancel
