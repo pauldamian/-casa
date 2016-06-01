@@ -74,8 +74,8 @@ def _forecast(hours):
         w = meteo.get_forecast(h)
         prefix = "The weather in %s hours will be " % h
     message = prefix + "%s with a temperature of %s*. " % (w.general, w.temp)
-    if h != 0:
-        message = message + "Chances of rain until then: %s" % w.rain
+##    if h != 0:
+##        message = message + "Chances of rain until then: %s" % w.rain
     return message
 
 

@@ -45,7 +45,11 @@ def notify(message, username):
 def register_latest_commands():
     lid = db.get_latest_id()
     if(lid > 0):
-        new_messages = tweet.get_direct_messages(since_id=lid)
+        try:
+            new_messages = tweet.get_direct_messages(since_id=lid)
+        except TwythonError as te:
+            log.write(te.message)
+            return
         status = 'NEW'
     else:
         new_messages = tweet.get_direct_messages(count=1)
@@ -61,6 +65,7 @@ def register_latest_commands():
 
 
 def run():
+    log.write('Twitter process started')
     while True:
         register_latest_commands()
         sleep(61)

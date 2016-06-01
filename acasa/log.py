@@ -7,6 +7,6 @@ import datetime
 
 def write(text):
     dt = datetime.datetime
-    with open('acasa.log', 'a') as f:
+    with open('/var/log/acasa/acasa.log', 'a') as f:
         f.seek(0, 2)
         f.write(str(dt.now()) + ' ' + text + '\n')

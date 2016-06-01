@@ -15,6 +15,14 @@ class Laverdadb:
         (cid INTEGER PRIMARY KEY, message TEXT, data TEXT, schedule TEXT, commander TEXT, status TEXT);')
         self.curs.execute('CREATE TABLE IF NOT EXISTS thin (date STRING PRIMARY KEY, temp REAL, hum REAL);')
 
+    def execute(self, query):
+        try:
+            result = self.curs.execute(query)
+        except sqlite3.OperationalError:
+            sleep(3)
+            self.execute(query)
+        return result
+
     def get_static_id(self):
         self.curs.execute('SELECT cid FROM commands WHERE cid < 10000000 \
                             ORDER BY cid DESC LIMIT 1;')
@@ -95,21 +103,22 @@ class Laverdadb:
         
 
     def cancel_command(self, text):
-        # self.update_command_status(ccid, 'IN PROGRESS')
         if text == 'all':
             for cid in self.curs.execute("SELECT cid FROM commands WHERE status='NEW'").fetchall():
                 self.update_command_status(cid[0], 'CANCELLED')
         else:
-            for cid in self.curs.execute("SELECT cid FROM commands WHERE message IS ? AND status='NEW'", (text,)).fetchall():
-                self.update_command_status(cid[0], 'CANCELLED')
-#        self.update_command_status(ccid, 'COMPLETED')
+            cid = self.curs.execute("SELECT cid FROM commands WHERE message IS ? AND status='NEW' LIMIT 1", (text,)).fetchone()
+            self.update_command_status(cid[0], 'CANCELLED')
 
     def read_current_commands(self):
         res = []
         now = str(datetime.now())
-        for row in self.curs.execute("SELECT * FROM commands WHERE status='NEW' AND schedule<? ;",
-                                     (now,)).fetchall():
-            res.append(self.to_command(row))
+        try:
+            for row in self.curs.execute("SELECT * FROM commands WHERE status='NEW' AND schedule<? ;",
+                                         (now,)).fetchall():
+                res.append(self.to_command(row))
+        except sqlite3.OperationalError:
+            pass
         return res
 
     def update_command_status(self, cid, status):

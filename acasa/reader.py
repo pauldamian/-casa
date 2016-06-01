@@ -13,6 +13,7 @@ from things.th import instant_th
 db = Laverdadb()
 
 def run():
+    log.write('Reader process started')
     while True:
         t, h = instant_th()
         values = []
