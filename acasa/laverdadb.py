@@ -34,8 +34,7 @@ class Laverdadb:
         return sid + 1
 
     def get_latest_id(self):
-        self.curs.execute('select cid from commands where status is "COMPLETED" \
-                            order by cid desc limit 1;')
+        self.curs.execute('select max(cid) from commands;')
         try:
             lid = int(self.curs.fetchone()[0])
         except TypeError:

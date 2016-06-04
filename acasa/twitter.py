@@ -11,12 +11,11 @@ from time import sleep
 import log
 import resources as r
 from laverdadb import Laverdadb
-from command import Command
 
 tweet = Twython(r.C_KEY, r.C_SECRET, r.A_TOKEN, r.A_SECRET)
 seen_messages = []
 db = Laverdadb()
-
+lid = 0
 
 def send_help(commander):
     text = "The current set of commands includes:\n\
@@ -43,7 +42,8 @@ def notify(message, username):
 
 
 def register_latest_commands():
-    lid = db.get_latest_id()
+    global lid
+    lid = max(db.get_latest_id(), lid)
     if(lid > 0):
         try:
             new_messages = tweet.get_direct_messages(since_id=lid)
@@ -57,10 +57,12 @@ def register_latest_commands():
     for message in new_messages:
         # Take commands only from authorized users
         # These users must be stored in a list called USERS in the resources file
+        # print message['sender']['location']
         username = message['sender']['screen_name']
         data = datetime.datetime.strptime(message['created_at'], '%a %b %d %H:%M:%S +%f %Y')
-        res = db.register_command(message['id'], message['text'].strip(), str(data), username, status)
-        if res != 0: 
+        lid = message['id']
+        res = db.register_command(lid, message['text'].strip(), str(data), username, status)
+        if res != 0:
             notify('Could not register command. Try again later', username)
 
 
@@ -69,7 +71,7 @@ def run():
     while True:
         register_latest_commands()
         sleep(61)
-
+run()
 
 def test_run():
     while True:
