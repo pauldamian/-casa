@@ -3,6 +3,7 @@ try:
 except ImportError:
     print "Running compatibility mode"
 from time import sleep
+import gpio_mapping as gm
 
 """
 Pin Mapping:
@@ -14,8 +15,8 @@ Pin 11 - GATE - Digital
 """
 
 dimming = 100
-AC_LOAD = 11
-SYNC = 7
+AC_LOAD = gm.GATE
+SYNC = gm.SYNC
 
 
 def _zero_cross_int(arg):

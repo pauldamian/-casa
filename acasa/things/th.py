@@ -2,7 +2,9 @@ try:
     import Adafruit_DHT
 except ImportError:
     print "Running compatibility mode"
-pin = 23    # GPIO Pin
+import gpio_mapping as gm
+
+pin = gm.DHT_PIN    # GPIO Pin
 
 
 def instant_th(steps=3):
@@ -16,5 +18,3 @@ def instant_th(steps=3):
         else:
             steps += 1
     return temps / steps, hums / steps
-
-    
