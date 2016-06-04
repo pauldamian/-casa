@@ -2,6 +2,7 @@ import sqlite3
 from datetime import datetime
 from command import Command
 import log
+from time import sleep
 
 
 class Laverdadb:
@@ -53,7 +54,7 @@ class Laverdadb:
                 and make sure that the date is in the future'
         else:
             return self.insert_command(com)
-            
+
     def insert_command(self, com):
         c = (int(com.cid), com.order, str(com.data), str(com.schedule), com.commander, com.status)
         try:
@@ -77,7 +78,7 @@ class Laverdadb:
             arg = ''
         c = Command(row[0], order, row[2], row[4], args=arg)
         return c
-    
+
     def insert_reading(self, values):
         val = tuple(values)
         try:
@@ -89,7 +90,7 @@ class Laverdadb:
         except sqlite3.OperationalError as oe:
             log.write(oe.message)
         return 1
-    
+
     def get_reading(self):
         self.curs.execute('SELECT AVG(temp), AVG(hum) FROM thin ORDER BY date DESC LIMIT 3;')
         try:
@@ -99,7 +100,6 @@ class Laverdadb:
             log.write(te.message)
             return "No sensor readings recorded!"
         return t, h
-        
 
     def cancel_command(self, text):
         if text == 'all':
