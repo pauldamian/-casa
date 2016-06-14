@@ -118,8 +118,8 @@ class Todo:
             for row in self.curs.execute("SELECT * FROM commands WHERE status='NEW' AND schedule<? ;",
                                          (now,)).fetchall():
                 res.append(self.to_command(row))
-        except sqlite3.OperationalError:
-            pass
+        except sqlite3.OperationalError as oe:
+            log.write(oe.message)
         return res
 
     def get_completed_commands(self):
