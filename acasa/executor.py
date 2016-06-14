@@ -3,14 +3,14 @@ Created on 28 mar. 2016
 
 @author: Paul
 '''
-from laverdadb import Laverdadb
+from acasa.todo import Todo
 import log
 from internet import meteo
 from time import sleep
 
 from things import dim
 
-db = Laverdadb()
+db = Todo()
 
 
 def show(arg):

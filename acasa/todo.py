@@ -5,7 +5,7 @@ from command import Command
 import log
 
 
-class Laverdadb:
+class Todo:
     curs = None
     conn = None
 

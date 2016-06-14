@@ -10,11 +10,11 @@ from time import sleep
 
 import log
 import resources as r
-from laverdadb import Laverdadb
+from acasa.todo import Todo
 
 tweet = Twython(r.C_KEY, r.C_SECRET, r.A_TOKEN, r.A_SECRET)
 seen_messages = []
-db = Laverdadb()
+db = Todo()
 mid = 0 # max id
 
 

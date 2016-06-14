@@ -9,12 +9,12 @@ import getopt
 from datetime import datetime as dt
 from datetime import timedelta
 import command
-from laverdadb import Laverdadb
+from acasa.todo import Todo
 
 from resources import USERS
 from croniter import croniter
 
-db = Laverdadb()
+db = Todo()
 
 weekdays = {'Mon': 1, 'Tue': 2, 'Wed': 3, 'Thu': 4, 'Fri': 5, 'Sat': 6, 'Sun': 7}
 
