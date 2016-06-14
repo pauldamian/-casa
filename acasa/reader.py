@@ -6,11 +6,11 @@ Created on 17 mai 2016
 from laverdadb import Laverdadb
 from datetime import datetime as dt
 import log
-from twitter import notify
 from time import sleep
 from things.th import instant_th
 
 db = Laverdadb()
+
 
 def run():
     log.write('Reader process started')
@@ -20,9 +20,5 @@ def run():
         values.append(str(dt.now()))
         values.append(t)
         values.append(h)
-        try:
-            db.insert_reading(values)
-            sleep(60)
-        except sqlite3.OperationalError:
-            sleep(10)
-
+        db.insert_reading(values)
+        sleep(60)

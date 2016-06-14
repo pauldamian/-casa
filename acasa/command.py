@@ -19,7 +19,7 @@ def valid_date(date):
 
 class Command:
     #    _command_schedule = {'Mon':[], 'Tue':[], 'Wed':[], 'Thu':[], 'Fri':[], 'Sat':[], 'Sun':[]}
-    def __init__(self, cid, order, data, commander, status='NEW', args=None, schedule=None):
+    def __init__(self, cid, order, data, commander, status='NEW', args=None, schedule=None, result=''):
         if (order.lower().split()[0] not in valid_commands) or (order.lower().split()[0] == 'help'):
             self.cid = 0
             return
@@ -42,4 +42,5 @@ class Command:
         self.cid = cid
         self.data = data
         self.commander = commander
-        self.status = 'NEW'
+        self.status = status
+        self.result = result

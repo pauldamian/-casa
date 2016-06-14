@@ -3,17 +3,12 @@ Created on 28 mar. 2016
 
 @author: Paul
 '''
-# from datetime import datetime
 from laverdadb import Laverdadb
 import log
-from twitter import notify
 from internet import meteo
 from time import sleep
-from __init__ import TEST
 
-if not TEST:
-    from things import dim
-    from things.th import instant_th
+from things import dim
 
 db = Laverdadb()
 
@@ -74,8 +69,8 @@ def _forecast(hours):
         w = meteo.get_forecast(h)
         prefix = "The weather in %s hours will be " % h
     message = prefix + "%s with a temperature of %s*. " % (w.general, w.temp)
-##    if h != 0:
-##        message = message + "Chances of rain until then: %s" % w.rain
+#    if h != 0:
+#        message = message + "Chances of rain until then: %s" % w.rain
     return message
 
 
@@ -91,7 +86,9 @@ def execute_command(command):
            'cancel': cancel
            }
     res = com[command.order](command.args)
-    notify(res, command.commander)
+    log.write(res)
+    db.update_command_result(command.cid, res)
+#    notify(res, command.commander)
 
 
 def run():
@@ -105,4 +102,4 @@ def run():
             if command.order == 'cancel':
                 break
             log.write('command %s executed successfully' % command.order)
-        sleep(5)
+        sleep(1)

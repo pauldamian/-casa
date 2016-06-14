@@ -1,8 +1,8 @@
 import sqlite3
 from datetime import datetime
+from time import sleep
 from command import Command
 import log
-from time import sleep
 
 
 class Laverdadb:
@@ -13,7 +13,7 @@ class Laverdadb:
         self.conn = sqlite3.connect('laverda.db')
         self.curs = self.conn.cursor()
         self.curs.execute('CREATE TABLE IF NOT EXISTS commands \
-        (cid INTEGER PRIMARY KEY, message TEXT, data TEXT, schedule TEXT, commander TEXT, status TEXT);')
+        (cid INTEGER PRIMARY KEY, message TEXT, data TEXT, schedule TEXT, commander TEXT, status TEXT, result TEXT);')
         self.curs.execute('CREATE TABLE IF NOT EXISTS thin (date STRING PRIMARY KEY, temp REAL, hum REAL);')
 
     def execute(self, query):
@@ -46,19 +46,21 @@ class Laverdadb:
     def register_command(self, cid, message, data, commander, status='NEW', schedule=None):
         com = Command(cid, message, data, commander, status=status, schedule=schedule)
         if com.cid == 0:
-            return 'Invalid command'
+            log.write('Invalid command')
         elif com.cid == -1:
-            return 'You are not authorized to perform this command.'
+            log.write('You are not authorized to perform this command.')
         if com.cid == -2:
-            return 'Invalid schedule time. Please respect the given format\
-                and make sure that the date is in the future'
+            log.write('Invalid schedule time. Please respect the given format\
+                and make sure that the date is in the future')
         else:
             return self.insert_command(com)
+        return -1
 
     def insert_command(self, com):
-        c = (int(com.cid), com.order, str(com.data), str(com.schedule), com.commander, com.status)
+        c = (int(com.cid), com.order, str(com.data), str(com.schedule), com.commander, com.status,
+             com.result)
         try:
-            self.curs.execute("INSERT INTO commands VALUES(?, ?, ?, ?, ?, ?);", c)
+            self.curs.execute("INSERT INTO commands VALUES(?, ?, ?, ?, ?, ?, ?);", c)
             self.conn.commit()
             log.write('Command %s registered successfully' % com.order)
             return 0
@@ -76,7 +78,7 @@ class Laverdadb:
         else:
             order = row[1]
             arg = ''
-        c = Command(row[0], order, row[2], row[4], args=arg)
+        c = Command(row[0], order, row[2], row[4], args=arg, result=row[6])
         return c
 
     def insert_reading(self, values):
@@ -120,6 +122,15 @@ class Laverdadb:
             pass
         return res
 
+    def get_completed_commands(self):
+        res = []
+        try:
+            for row in self.curs.execute("SELECT * FROM commands WHERE status='COMPLETED';").fetchall():
+                res.append(self.to_command(row))
+        except sqlite3.OperationalError as oe:
+            log.write(oe.message)
+        return res
+
     def update_command_status(self, cid, status):
         q = (status, cid)
         try:
@@ -127,9 +138,13 @@ class Laverdadb:
             self.conn.commit()
             log.write("Command %s was marked as %s" % (cid, status))
         except sqlite3.OperationalError as oe:
-            print oe
-            log.write("The command %s probably executed, but failed to update its status" % cid)
+            log.write(oe.message)
 
-# db_instance = Laverdadb()
-# def get_db_instance():
-#     return db_instance
+    def update_command_result(self, cid, result):
+        q = (result, cid)
+        try:
+            self.curs.execute('UPDATE commands SET status=? WHERE cid=?', q)
+            self.conn.commit()
+            log.write("Command %s result was updated to %s" % (cid, result))
+        except sqlite3.OperationalError as oe:
+            log.write(oe.message)

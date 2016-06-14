@@ -67,11 +67,22 @@ def register_latest_commands():
             notify('Could not register command. Try again later', username)
 
 
+def respond():
+    results = db.get_completed_commands()
+    for res in results:
+        notify(res.commander, res.result)
+
+
 def run():
     log.write('Twitter process started')
+    i = 1
     while True:
-        register_latest_commands()
-        sleep(61)
+        respond()
+        sleep(3)
+        i += 1
+        if i == 20:
+            register_latest_commands()
+            i = 1
 
 
 def test_run():
