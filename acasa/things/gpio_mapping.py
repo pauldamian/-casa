@@ -15,3 +15,6 @@ GATE = 11
 
 # DHT11 - temperature and humidity sensor
 DHT_PIN = 23
+
+# MQ2 - gas and smoke detector
+MQ2_DPIN = 18
