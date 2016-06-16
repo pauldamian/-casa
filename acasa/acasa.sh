@@ -3,7 +3,7 @@
 
 usage() {
 	echo "Usage: $0 {start|stop|restart|status} [component]" >&2 
-	echo "	component in [executor, reader, twitter]" >&2
+	echo "	component in [executor, reader, communicator]" >&2
 }
 
 if [ -z "${1}" ]; then
@@ -20,10 +20,9 @@ fi
 
 PROG="acasa"
 if [[ ${2} ]]; then
-    if [[ ${2} == "twitter" || ${2} == "executor" || ${2} == "reader" ]]; then
+    if [[ ${2} == "communicator" || ${2} == "executor" || ${2} == "reader" ]]; then
     	PROG=$2;
     	PIDFILE=${log_dir}${PROG}.pid;
-	echo $PIDFILE
     else
 	echo "Invalid component name"
 	usage
@@ -38,7 +37,7 @@ star() {
 start() {
   if [ ${PROG} == "acasa" ]; then
 	star executor;
-	star twitter;
+	star communicator;
 	star reader;
   else
 	star ${PROG};
@@ -60,7 +59,7 @@ stat() {
   if [ ${PROG} == "acasa" ]; then
     status executor
     status reader
-    status twitter
+    status communicator
   else
     status ${PROG}
   fi
@@ -85,7 +84,7 @@ stop() {
 stp() {
 
   if [ ${PROG} == "acasa" ]; then
-	stop twitter;
+	stop communicator;
 	stop reader;
 	stop executor;
   else

@@ -3,7 +3,7 @@ Created on 28 mar. 2016
 
 @author: Paul
 '''
-from acasa.todo import Todo
+from todo import Todo
 import log
 from internet import meteo
 from time import sleep
@@ -29,6 +29,16 @@ def show(arg):
         return 'Temperature is ' + str("%.1f" % temp) + '*C'
     elif arg == 'hum':
         return 'Humidity is ' + str("%.1f" % hum) + '%'
+    elif arg == 'commands':
+        coms = db.read_next_commands(3)
+        if len(coms) == 0:
+            result = "There are no commands scheduled"
+        else:
+            result = "The following commands will be executed:"
+            for com in coms:
+                result = result + "\n" + com.order + " " + com.args + " on " + str(com.schedule).split('.')[0]
+        print result
+        return result
 
 
 def lights(intensity):

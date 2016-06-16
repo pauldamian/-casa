@@ -1,11 +1,7 @@
-try:
-    import Adafruit_DHT
-except ImportError:
-    print "Running compatibility mode"
+import Adafruit_DHT
 import gpio_mapping as gm
 
 pin = gm.DHT_PIN    # GPIO Pin
-
 
 def instant_th(steps=3):
     temps = 0.0

@@ -3,7 +3,7 @@ Created on 17 mai 2016
 
 @author: Paul
 '''
-from acasa.todo import Todo
+from todo import Todo
 from datetime import datetime as dt
 import log
 from time import sleep

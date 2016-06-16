@@ -9,7 +9,7 @@ import getopt
 from datetime import datetime as dt
 from datetime import timedelta
 import command
-from acasa.todo import Todo
+from todo import Todo
 
 from resources import USERS
 from croniter import croniter

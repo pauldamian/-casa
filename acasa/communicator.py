@@ -10,12 +10,12 @@ from time import sleep
 
 import log
 import resources as r
-from acasa.todo import Todo
+from todo import Todo
 
 tweet = Twython(r.C_KEY, r.C_SECRET, r.A_TOKEN, r.A_SECRET)
 seen_messages = []
 db = Todo()
-mid = 0 # max id
+mid = 0 # max id per twitter
 
 
 def send_help(commander):
@@ -44,7 +44,7 @@ def notify(message, username):
 
 def register_latest_commands():
     global mid
-    lid = max(db.get_latest_id(), mid)
+    lid = max(db.get_latest_id(), mid) # max id / registered commands
     if(lid > 0):
         try:
             new_messages = tweet.get_direct_messages(since_id=lid)
@@ -62,7 +62,7 @@ def register_latest_commands():
         username = message['sender']['screen_name']
         data = datetime.datetime.strptime(message['created_at'], '%a %b %d %H:%M:%S +%f %Y')
         mid = max(message['id'], mid)
-        res = db.register_command(lid, message['text'].strip(), str(data), username, status)
+        res = db.register_command(mid, message['text'].strip(), str(data), username, status)
         if res != 0:
             notify('Could not register command. Try again later', username)
 
@@ -70,7 +70,8 @@ def register_latest_commands():
 def respond():
     results = db.get_completed_commands()
     for res in results:
-        notify(res.commander, res.result)
+        notify(res.result, res.commander)
+        db.update_command_status(res.cid, 'NOTIFIED')
 
 
 def run():

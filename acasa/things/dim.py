@@ -14,6 +14,7 @@ Pin 11 - GATE - Digital
 dimming = 100
 AC_LOAD = gm.GATE
 SYNC = gm.SYNC
+gp.setwarnings(False)
 
 
 def _zero_cross_int(arg):

@@ -78,7 +78,7 @@ class Todo:
         else:
             order = row[1]
             arg = ''
-        c = Command(row[0], order, row[2], row[4], args=arg, result=row[6])
+        c = Command(row[0], order, row[2], row[4], args=arg, schedule=row[3], result=row[6])
         return c
 
     def insert_reading(self, values):
@@ -122,6 +122,16 @@ class Todo:
             log.write(oe.message)
         return res
 
+    def read_next_commands(self, number):
+        res = []
+        try:
+            for row in self.curs.execute("SELECT * FROM commands WHERE status='NEW' ORDER BY schedule LIMIT ?;",
+                                         (number,)).fetchall():
+                res.append(self.to_command(row))
+        except sqlite3.OperationalError as oe:
+            log.write(oe.message)
+        return res
+    
     def get_completed_commands(self):
         res = []
         try:
@@ -143,7 +153,7 @@ class Todo:
     def update_command_result(self, cid, result):
         q = (result, cid)
         try:
-            self.curs.execute('UPDATE commands SET status=? WHERE cid=?', q)
+            self.curs.execute('UPDATE commands SET result=? WHERE cid=?', q)
             self.conn.commit()
             log.write("Command %s result was updated to %s" % (cid, result))
         except sqlite3.OperationalError as oe:

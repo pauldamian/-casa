@@ -14,7 +14,7 @@ SYNC = 7
 GATE = 11
 
 # DHT11 - temperature and humidity sensor
-DHT_PIN = 23
+DHT_PIN = 23 # BCM, not BOARD numbering
 
 # MQ2 - gas and smoke detector
 MQ2_DPIN = 18
