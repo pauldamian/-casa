@@ -11,7 +11,7 @@ valid_commands = ['lights', 'help', 'lock', 'unlock', 'show', 'cancel']
 
 def valid_date(date):
     try:
-        vdate = datetime.strptime(date, '%Y-%m-%d %H:%M:%S')
+        vdate = datetime.strptime(date.split('.')[0], '%Y-%m-%d %H:%M:%S')
     except ValueError:
         return None
     return vdate
