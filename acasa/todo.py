@@ -43,8 +43,8 @@ class Todo:
             log.write("New deployment")
         return lid
 
-    def register_command(self, cid, message, data, commander, status='NEW', schedule=None):
-        com = Command(cid, message, data, commander, status=status, schedule=schedule)
+    def register_command(self, cid, message, data, commander, status='NEW', schedule=None, result=''):
+        com = Command(cid, message, data, commander, status=status, schedule=schedule, result=result)
         if com.cid == 0:
             log.write('Invalid command')
         elif com.cid == -1:
@@ -131,7 +131,7 @@ class Todo:
         except sqlite3.OperationalError as oe:
             log.write(oe.message)
         return res
-    
+
     def get_completed_commands(self):
         res = []
         try:

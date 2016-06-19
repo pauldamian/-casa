@@ -199,6 +199,6 @@ Example: scheduler.py -c "lights on" -t "2016-05-07 14:43:50"
                         break
                     except ValueError as ve:
                         print ve.message
-                    
+
 if __name__ == "__main__":
     main(sys.argv[1:])

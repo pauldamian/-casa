@@ -3,6 +3,7 @@ import gpio_mapping as gm
 
 pin = gm.DHT_PIN    # GPIO Pin
 
+
 def instant_th(steps=3):
     temps = 0.0
     hums = 0.0
