@@ -13,8 +13,10 @@ class Todo:
         self.conn = sqlite3.connect('laverda.db')
         self.curs = self.conn.cursor()
         self.curs.execute('CREATE TABLE IF NOT EXISTS commands \
-        (cid INTEGER PRIMARY KEY, message TEXT, data TEXT, schedule TEXT, commander TEXT, status TEXT, result TEXT);')
-        self.curs.execute('CREATE TABLE IF NOT EXISTS thin (date STRING PRIMARY KEY, temp REAL, hum REAL);')
+        (cid INTEGER PRIMARY KEY, message TEXT, data TEXT, schedule TEXT, \
+        commander TEXT, status TEXT, result TEXT);')
+        self.curs.execute("CREATE TABLE IF NOT EXISTS thin (date STRING PRIMARY KEY, temp REAL,\
+        hum REAL, pressure REAL, source TEXT);")
 
     def execute(self, query):
         try:
@@ -84,7 +86,7 @@ class Todo:
     def insert_reading(self, values):
         val = tuple(values)
         try:
-            self.curs.execute('INSERT INTO thin VALUES (?, ?, ?)', val)
+            self.curs.execute('INSERT INTO thin VALUES (?, ?, ?, ?, ?)', val)
             self.conn.commit()
             return 0
         except sqlite3.IntegrityError:
@@ -93,8 +95,11 @@ class Todo:
             log.write(oe.message)
         return 1
 
-    def get_reading(self):
-        self.curs.execute('SELECT AVG(temp), AVG(hum) FROM thin ORDER BY date DESC LIMIT 3;')
+    def get_reading(self, source='inside'):
+        now = datetime.now()
+        now = now.replace(hour=now.hour - 1)
+        self.curs.execute('SELECT AVG(temp), AVG(hum) FROM thin WHERE source is ? AND date > ?\
+        ORDER BY date DESC LIMIT 3;', (source, str(now)))
         try:
             x = self.curs.fetchone()
             t, h = x
@@ -104,12 +109,18 @@ class Todo:
         return t, h
 
     def cancel_command(self, text):
-        if text == 'all':
-            for cid in self.curs.execute("SELECT cid FROM commands WHERE status='NEW'").fetchall():
+        try:
+            if text == 'all':
+                for cid in self.curs.execute("SELECT cid FROM commands WHERE status='NEW'").fetchall():
+                    self.update_command_status(cid[0], 'CANCELLED')
+            else:
+                cid = self.curs.execute("SELECT cid FROM commands WHERE message IS ? AND status='NEW' LIMIT 1",
+                                        (text,)).fetchone()
                 self.update_command_status(cid[0], 'CANCELLED')
-        else:
-            cid = self.curs.execute("SELECT cid FROM commands WHERE message IS ? AND status='NEW' LIMIT 1", (text,)).fetchone()
-            self.update_command_status(cid[0], 'CANCELLED')
+            return 0
+        except sqlite3.OperationalError as oe:
+            log.write(oe.message)
+            return 1
 
     def read_current_commands(self):
         res = []

@@ -20,9 +20,10 @@ mid = 0 # max id per twitter
 
 def send_help(commander):
     text = "The current set of commands includes:\n\
-    Show - returns sensor readings\n\
-    Lights - controls the lightning\n\
-    Help - displays this message"
+    Show temp | hum | forecast | weather | commands - returns sensor readings\n\
+    Lights off | <intensity> | on - controls the lightning\n\
+    Cancel <command_name> - cancels next command of type <command_name>\n\
+    Help [command] - displays this message or specific command help"
     notify(text, commander)
 
 
@@ -59,10 +60,13 @@ def register_latest_commands():
         # Take commands only from authorized users
         # These users must be stored in a list called USERS in the resources file
         # print message['sender']['location']
+        text = message['text'].strip().lower()
+        if text.split()[0] == 'help':
+            text = 'show ' + text
         username = message['sender']['screen_name']
         data = datetime.datetime.strptime(message['created_at'], '%a %b %d %H:%M:%S +%f %Y')
         mid = max(message['id'], mid)
-        res = db.register_command(mid, message['text'].strip(), str(data), username, status)
+        res = db.register_command(mid, text, str(data), username, status)
         if res != 0:
             notify('Could not register command. Try again later', username)
 
@@ -84,12 +88,3 @@ def run():
         if i == 20:
             register_latest_commands()
             i = 1
-
-
-def test_run():
-    while True:
-        lid = db.get_latest_id()
-        message = raw_input('Your wish is my command: ')
-        status = 'NEW'
-        data = datetime.datetime.now()
-        db.register_command(lid + 1, message, data, 'pauldamian8', status)
