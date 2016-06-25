@@ -169,3 +169,11 @@ class Todo:
             log.write("Command %s result was updated to %s" % (cid, result))
         except sqlite3.OperationalError as oe:
             log.write(oe.message)
+
+    def delete_command(self, cid):
+        try:
+            self.curs.execute("DELETE FROM commands WHERE cid=?;", (cid,))
+            self.conn.commit()
+            log.write("Command %s was deleted" % str(cid))
+        except sqlite3.OperationalError as oe:
+            log.write(oe.message)

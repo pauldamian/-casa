@@ -12,14 +12,18 @@ from help import help_text
 from things import dim
 
 db = Todo()
-defaults = {'forecast': 3, 'weather': 'city', 'temp': 'inside', 'hum': 'inside', 'commands': 3}
+defaults = {'forecast': 3,
+            'weather': 'city',
+            'temp': 'inside',
+            'hum': 'inside',
+            'commands': 3
+            }
 sensor_location = {'temp': ['inside', 'outside'],
                    'hum': ['inside', 'outside'],
                    'pressure': ['outside'],
                    'weather': ['outside'],
                    'smoke': ['inside']
                    }
-sensors_locations = ['inside', 'outside']
 
 
 def show(arg):

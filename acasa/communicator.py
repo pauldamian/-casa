@@ -18,13 +18,13 @@ db = Todo()
 mid = 0 # max id per twitter
 
 
-def send_help(commander):
-    text = "The current set of commands includes:\n\
-    Show temp | hum | forecast | weather | commands - returns sensor readings\n\
-    Lights off | <intensity> | on - controls the lightning\n\
-    Cancel <command_name> - cancels next command of type <command_name>\n\
-    Help [command] - displays this message or specific command help"
-    notify(text, commander)
+# def send_help(commander):
+#     text = "The current set of commands includes:\n\
+#     Show temp | hum | forecast | weather | commands - returns sensor readings\n\
+#     Lights off | <intensity> | on - controls the lightning\n\
+#     Cancel <command_name> - cancels next command of type <command_name>\n\
+#     Help [command] - displays this message or specific command help"
+#     notify(text, commander)
 
 
 def notify(message, username):
@@ -68,7 +68,7 @@ def register_latest_commands():
         mid = max(message['id'], mid)
         res = db.register_command(mid, text, str(data), username, status)
         if res != 0:
-            notify('Could not register command. Try again later', username)
+            return notify('Could not register command. Try again later', username)
 
 
 def respond():
