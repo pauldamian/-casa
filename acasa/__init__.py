@@ -1,11 +1,8 @@
-TEST = False
+import keys
 
 
-def set_test_mode():
-    global TEST
-    TEST = True
-
-
-def mode():
-    global TEST
-    print TEST
+def encode_keys():
+    if keys.encoded is False:
+        for key in keys.TWITTER_KEYS.itervalues():
+            key.encode('rot13')
+        keys.encoded = True

@@ -11,7 +11,7 @@ from datetime import timedelta
 import command
 from todo import Todo
 
-from resources import USERS
+from keys import USERS
 from croniter import croniter
 
 db = Todo()
@@ -102,27 +102,27 @@ Example: scheduler.py -c "lights on" -t "2016-05-07 14:43:50"
         if st == 'now' or st is None:
             st = str(dt.now()).split('.')[0]
         cid = db.get_static_id()
-        res = db.register_command(cid, com, dt.now(), user, schedule=st)
-        print res
+        r, res = db.register_command(cid, com, dt.now(), user, schedule=st)
+        if r != 0:
+            print res
     else:
         print '''
-        Welcome to the Command Scheduler. This tool enables you to schedule jobs,
-        either for one-time or recurrent runs.
-        Begin by choosing one of the available commands from below:'''
+    Welcome to the Command Scheduler. This tool enables you to schedule jobs,
+    either for one-time or recurrent runs.
+    Begin by choosing one of the available commands from below:'''
         vc = command.valid_commands
-        vc.remove('help')
         print '        ' + str(vc)
         while True:
             com = raw_input('Type the desired command along with its arguments: ')
             if com.split()[0] in vc:
                 break
-        print '''\n
-        Next, set the date and time for the command execution.
-        Use the following format: 2000-01-30 21:45:50'''
+        print '''
+    Next, set the date and time for the command execution.
+    Use the following format: 2000-01-30 21:45:50'''
         while True:
             t = raw_input('Type the desired date: ')
             st = command.valid_date(t)
-            if st is not None:
+            if st is not False:
                 if st > dt.now():
                     break
         while True:
@@ -131,12 +131,14 @@ Example: scheduler.py -c "lights on" -t "2016-05-07 14:43:50"
                 break
         if once == 'o':
             cid = db.get_static_id()
-            res = db.register_command(cid, com, dt.now(), user, schedule=str(st))
+            r, res = db.register_command(cid, com, dt.now(), user, schedule=str(st))
+            if r != 0:
+                print res
         else:
             while True:
                 ed = raw_input('Please enter the end date: ')
                 et = command.valid_date(ed)
-                if et is not None:
+                if et is not False:
                     if et > st:
                         break
             print '''
@@ -160,7 +162,7 @@ Example: scheduler.py -c "lights on" -t "2016-05-07 14:43:50"
                     except ValueError:
                         increment = 1
                     except IndexError:
-                        print 'You need to provide more arguments (the unit of time, most likely'
+                        print 'You need to provide more arguments (the unit of time, most likely)'
                     if cate == 'minute':
                         recurrence.append(timedelta(minutes=increment))
                     elif cate == 'hour':
@@ -181,9 +183,10 @@ Example: scheduler.py -c "lights on" -t "2016-05-07 14:43:50"
                         dl = generate_dates(st, et, recurrence)
                         for d in dl:
                             cid = db.get_static_id()
-                            res = db.register_command(cid, com, dt.now(), user, schedule=str(d))
+                            r, res = db.register_command(cid, com, dt.now(), user, schedule=str(d))
+                            if r != 0:
+                                print res
                             print '.',
-                        print 'Done'
                         break
                 else:
                     try:
@@ -192,13 +195,15 @@ Example: scheduler.py -c "lights on" -t "2016-05-07 14:43:50"
                         nt = itr.get_next(dt)
                         while nt <= et:
                             cid = db.get_static_id()
-                            res = db.register_command(cid, com, dt.now(), user, schedule=str(nt))
+                            r, res = db.register_command(cid, com, dt.now(), user, schedule=str(nt))
+                            if r != 0:
+                                print res
                             nt = itr.get_next(dt)
                             print '.',
-                        print 'Done'
                         break
                     except ValueError as ve:
                         print ve.message
+    print 'Done'
 
 if __name__ == "__main__":
     main(sys.argv[1:])

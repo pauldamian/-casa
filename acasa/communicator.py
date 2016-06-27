@@ -7,12 +7,11 @@ from twython import Twython
 from twython.exceptions import TwythonError
 import datetime
 from time import sleep
-
 import log
-import resources as r
 from todo import Todo
+from keys import TWITTER_KEYS as K
 
-tweet = Twython(r.C_KEY, r.C_SECRET, r.A_TOKEN, r.A_SECRET)
+tweet = Twython(K['C_KEY'], K['C_SECRET'], K['A_TOKEN'], K['A_SECRET'])
 seen_messages = []
 db = Todo()
 mid = 0 # max id per twitter
@@ -55,10 +54,10 @@ def register_latest_commands():
         status = 'NEW'
     else:
         new_messages = tweet.get_direct_messages(count=1)
-        status = 'COMPLETED'
+        status = 'NOTIFIED'
     for message in new_messages:
         # Take commands only from authorized users
-        # These users must be stored in a list called USERS in the resources file
+        # These users must be stored in a list called USERS in the keys file
         # print message['sender']['location']
         text = message['text'].strip().lower()
         if text.split()[0] == 'help':
@@ -66,9 +65,9 @@ def register_latest_commands():
         username = message['sender']['screen_name']
         data = datetime.datetime.strptime(message['created_at'], '%a %b %d %H:%M:%S +%f %Y')
         mid = max(message['id'], mid)
-        res = db.register_command(mid, text, str(data), username, status)
+        res, reas = db.register_command(mid, text, str(data), username, status)
         if res != 0:
-            return notify('Could not register command. Try again later', username)
+            return notify(reas, username)
 
 
 def respond():
@@ -85,6 +84,6 @@ def run():
         respond()
         sleep(3)
         i += 1
-        if i == 20:
+        if i == 10:
             register_latest_commands()
             i = 1

@@ -144,6 +144,7 @@ def execute_command(command):
     res = com[command.order](command.args)
     log.write(res)
     db.update_command_result(command.cid, res)
+    return res
 #    notify(res, command.commander)
 
 
@@ -153,8 +154,11 @@ def run():
         commands = db.read_current_commands()
         for command in commands:
             db.update_command_status(command.cid, 'IN PROGRESS')
-            execute_command(command)
-            db.update_command_status(command.cid, 'COMPLETED')
+            res = execute_command(command)
+            if res is not None:
+                db.update_command_status(command.cid, 'COMPLETED')
+            else:
+                db.update_command_status(command.cid, 'FAILED')
             if command.order == 'cancel':
                 break
             log.write('command %s executed successfully' % command.order)

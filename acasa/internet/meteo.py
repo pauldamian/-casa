@@ -4,7 +4,7 @@ Created on 4 apr. 2016
 @author: Paul
 '''
 import internet
-from resources import APPID
+from keys import APPID
 import time
 KELVIN_TO_CELSIUS = 273.15
 

@@ -48,15 +48,17 @@ class Todo:
     def register_command(self, cid, message, data, commander, status='NEW', schedule=None, result=''):
         com = Command(cid, message, data, commander, status=status, schedule=schedule, result=result)
         if com.cid == 0:
-            log.write('Invalid command')
+            reason = 'Invalid command'
         elif com.cid == -1:
-            log.write('You are not authorized to perform this command.')
-        if com.cid == -2:
-            log.write('Invalid schedule time. Please respect the given format\
-                and make sure that the date is in the future')
+            reason = 'You are not authorized to perform this command.'
+        elif com.cid == -2:
+            reason = 'Invalid schedule time. Please respect the given format and make sure that the date is in the future'
+        elif com.cid == -3:
+            reason = 'Not enough arguments provided for command'
         else:
-            return self.insert_command(com)
-        return -1
+            return self.insert_command(com), 'Error within the database'
+        log.write(reason)
+        return -1, reason
 
     def insert_command(self, com):
         c = (int(com.cid), com.order, str(com.data), str(com.schedule), com.commander, com.status,
