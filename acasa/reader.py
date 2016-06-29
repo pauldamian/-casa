@@ -7,12 +7,18 @@ from todo import Todo
 from datetime import datetime as dt
 import log
 from time import sleep
-# from things import th
-# from things import gas
-# from things import sensortag
+from things import th
+from things import gas
+from things.sensortag import TISensorTag
+from things import THINGS
 from keys import USERS
 
 db = Todo()
+dth = th.DHT(THINGS['dht_sensor']['name'], location=THINGS['dht_sensor']['location'],
+             pin=THINGS['dht_sensor']['pin'])
+sensortag = TISensorTag(THINGS['sensortag']['name'], location=THINGS['sensortag']['location'],
+                        mac=THINGS['sensortag']['MAC'])
+
 gas_alarm_text = 'High levels of gas/smoke detected!'
 TEMPERATURE_THRESHOLD = 40
 HUMIDITY_THRESHOLD = 90
@@ -48,11 +54,11 @@ def run():
     while True:
         if minutar % 15 == 0:
             minutar = 0
-            t, h, p = th.instant_th()
-            register_reading(th.SOURCE, t, h, p)
+            t, h, p = dth.instant_th()
+            register_reading(dth.location, t, h, p)
             if tag_connected:
                 t, h, p = sensortag.get_all()
-                register_reading(sensortag.SOURCE, t, h, p)
+                register_reading(sensortag.location, t, h, p)
         if gas.alarm() == 1:
             alarm_all_users(gas_alarm_text)
         gas.read()
