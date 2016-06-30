@@ -14,9 +14,9 @@ from things import THINGS
 from keys import USERS
 
 db = Todo()
-dth = th.DHT(THINGS['dht_sensor']['name'], location=THINGS['dht_sensor']['location'],
-             pin=THINGS['dht_sensor']['pin'])
-sensortag = TISensorTag(THINGS['sensortag']['name'], location=THINGS['sensortag']['location'],
+dth = th.DHT(THINGS['dht11_sensor']['type'], location=THINGS['dht11_sensor']['location'],
+             pin=THINGS['dht11_sensor']['pin'])
+sensortag = TISensorTag(THINGS['sensortag']['type'], location=THINGS['sensortag']['location'],
                         mac=THINGS['sensortag']['MAC'])
 
 gas_alarm_text = 'High levels of gas/smoke detected!'

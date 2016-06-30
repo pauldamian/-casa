@@ -14,12 +14,12 @@ from things import dim
 db = Todo()
 defaults = {'forecast': 3,
             'weather': 'city',
-            'temp': 'inside',
-            'hum': 'inside',
+            'temp': 'kitchen',
+            'hum': 'kitchen',
             'commands': 3
             }
-sensor_location = {'temp': ['inside', 'outside'],
-                   'hum': ['inside', 'outside'],
+sensor_location = {'temp': ['kitchen', 'outside'],
+                   'hum': ['kitchen', 'outside'],
                    'pressure': ['outside'],
                    'weather': ['outside'],
                    'smoke': ['inside']

@@ -18,7 +18,7 @@ class TISensorTag(Thing):
     tag = None
 
     def __init__(self, name, mac, location=None, pin=0):
-        super(TISensorTag, self).__init__(name, location, pin)
+        Thing.__init__(self, name, location)
         self.mac = mac # SensorTag MAC address
 
     def always_on(self, tag):

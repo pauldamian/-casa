@@ -4,47 +4,40 @@ Created on 28 mar. 2016
 @author: Paul
 '''
 from datetime import datetime
-from keys import USERS
+from resources import USERS
 
-valid_commands = ['lights', 'show', 'cancel']
+valid_commands = ['lights', 'help', 'lock', 'unlock', 'show', 'cancel']
 
 
 def valid_date(date):
     try:
         vdate = datetime.strptime(date.split('.')[0], '%Y-%m-%d %H:%M:%S')
     except ValueError:
-        return False
+        return None
     return vdate
 
 
 class Command:
-
-    def __init__(self, cid, order, data, commander, status='NEW', args='', schedule=None, result=''):
-        if order.lower().split()[0] not in valid_commands:
-            self.cid = 0    # invalid command
+    #    _command_schedule = {'Mon':[], 'Tue':[], 'Wed':[], 'Thu':[], 'Fri':[], 'Sat':[], 'Sun':[]}
+    def __init__(self, cid, order, data, commander, status='NEW', args=None, schedule=None, result=''):
+        if (order.lower().split()[0] not in valid_commands) or (order.lower().split()[0] == 'help'):
+            self.cid = 0
             return
         if commander not in USERS:
-            self.cid = -1   # unauthorized user
+            self.cid = -1
             return
-        self.args = args
+        if args is None:
+            self.args = ''
+        else:
+            self.args = args
         if schedule is None:
-            try:
-                parts = order.split()[-2] + ' ' + order.split()[-1]
-            except IndexError:
-                self.cid = -3   # there's no command without arguments
-                return
-            if valid_date(parts) != False:
-                self.schedule = valid_date(parts)
-                order = ' '.join(order.split()[:-2])
-            else:
-                self.schedule = datetime.now()
+            self.schedule = datetime.now()
         else:
             self.schedule = valid_date(schedule)
-        if self.schedule is not False:
-            # account for processing time
-            if self.schedule < datetime.now().replace(minute=datetime.now().minute - 1):
-                self.cid = -2
-                return
+            if self.schedule is None:
+                if self.schedule < datetime.now():
+                    self.cid = -2
+                    return
         self.order = order.lower()
         self.cid = cid
         self.data = data

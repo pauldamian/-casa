@@ -83,7 +83,12 @@ class Todo:
         else:
             order = row[1]
             arg = ''
-        c = Command(row[0], order, row[2], row[4], args=arg, schedule=row[3], result=row[6])
+        status = row[5]
+        if status == 'COMPLETED':
+            schedule=None
+        else:
+            schedule=row[3]
+        c = Command(row[0], order, row[2], row[4], args=arg, schedule=schedule, result=row[6])
         return c
 
     def insert_reading(self, values):
@@ -109,6 +114,8 @@ class Todo:
         except TypeError as te:
             log.write(te.message)
             return "No sensor readings recorded!"
+        if t is None or h is None:
+            raise ValueError
         return t, h
 
     def cancel_command(self, text):
