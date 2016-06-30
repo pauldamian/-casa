@@ -68,7 +68,8 @@ class Todo:
             self.conn.commit()
             log.write('Command %s registered successfully' % com.order)
             return 0
-        except sqlite3.IntegrityError:
+        except sqlite3.IntegrityError as ie:
+            log.write(ie.message)
             log.write('Command already in the database.')
         except sqlite3.OperationalError as oe:
             log.write(oe.message)
