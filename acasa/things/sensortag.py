@@ -17,8 +17,8 @@ from multiprocessing import Pool
 class TISensorTag(Thing):
     tag = None
 
-    def __init__(self, name, mac, location=None, pin=0):
-        Thing.__init__(self, name, location)
+    def __init__(self, name, use, mac, location=None):
+        Thing.__init__(self, name, use, location=location)
         self.mac = mac # SensorTag MAC address
 
     def always_on(self, tag):

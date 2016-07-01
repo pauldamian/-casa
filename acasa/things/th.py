@@ -7,8 +7,8 @@ from thing import Thing
 
 
 class DHT(Thing):
-    def __init__(self, name, location=None, pin=0):
-        Thing.__init__(self, name, location, pin)
+    def __init__(self, name, use, location=None, pin=0):
+        Thing.__init__(self, name, use, location, pin)
 
     def instant_th(self, steps=3):
         # Returns the averaged temperature, humidity
