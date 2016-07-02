@@ -1,9 +1,6 @@
 import Adafruit_DHT as dht
-import gpio_mapping as gm
 from thing import Thing
-
-# SOURCE = 'inside'
-# pin = gm.DHT_PIN    # GPIO Pin
+from time import sleep
 
 
 class DHT(Thing):
@@ -22,4 +19,5 @@ class DHT(Thing):
                 hums += humidity
             else:
                 steps += 1
+            sleep(1)
         return temps / steps, hums / steps, 0
