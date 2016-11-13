@@ -7,9 +7,11 @@ from twython import Twython
 from twython.exceptions import TwythonError
 import datetime
 from time import sleep
-import log
-from todo import Todo
-from keys import TWITTER_KEYS as K
+from utility import util
+from utility.todo import Todo
+from utility import constants
+
+K = util.get_conf_value(constants.KEY_TWITTER)
 
 tweet = Twython(K['C_KEY'], K['C_SECRET'], K['A_TOKEN'], K['A_SECRET'])
 seen_messages = []
@@ -35,10 +37,10 @@ def notify(message, username):
     '''
     try:
         status = tweet.send_direct_message(user=username, text=message)
-        log.write("Successfully sent message with id = " + str(status['id']))
+        util.log("Successfully sent message with id = " + str(status['id']))
         return status['id']
     except TwythonError as te:
-        log.write("Could not send message due to Twython Error: " + te.msg)
+        util.log("Could not send message due to Twython Error: " + te.msg)
     return 0
 
 
@@ -49,12 +51,12 @@ def register_latest_commands():
         try:
             new_messages = tweet.get_direct_messages(since_id=lid)
         except TwythonError as te:
-            log.write(te.message)
+            util.log(te.message)
             return
-        status = 'NEW'
+        status = constants.STATUS_NEW
     else:
         new_messages = tweet.get_direct_messages(count=1)
-        status = 'NOTIFIED'
+        status = constants.STATUS_NOTIFIED
     for message in new_messages:
         # Take commands only from authorized users
         # These users must be stored in a list called USERS in the keys file
@@ -74,11 +76,11 @@ def respond():
     results = db.get_completed_commands()
     for res in results:
         notify(res.result, res.commander)
-        db.update_command_status(res.cid, 'NOTIFIED')
+        db.update_command_status(res.cid, constants.STATUS_NOTIFIED)
 
 
 def run():
-    log.write('Twitter process started')
+    util.log('Twitter process started')
     i = 1
     while True:
         respond()

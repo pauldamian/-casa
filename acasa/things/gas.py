@@ -4,24 +4,22 @@ Created on 16 iun. 2016
 @author: Paul
 '''
 import RPi.GPIO as gp
-import gpio_mapping as gm
+from utility import util
+import constants
 
-dig_pin = gm.MQ2_DPIN
+dig_pin = util.get_sensor_attribute_value(constants.MQ2, constants.SENSOR_PIN)
 
 gp.setmode(gp.BOARD)
 gp.setup(dig_pin, gp.IN, pull_up_down=gp.PUD_DOWN)
-# gp.setup(dig_pin, gp.IN)
-SMOKE = 0
 
+SMOKE = 0
 
 def _set_smoke(pin):
     global SMOKE
     SMOKE = 1
 
-
 def alarm():
     return SMOKE
-
 
 def read():
     global SMOKE

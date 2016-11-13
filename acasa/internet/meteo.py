@@ -3,9 +3,11 @@ Created on 4 apr. 2016
 
 @author: Paul
 '''
-import internet
-from keys import APPID
 import time
+
+from utility import constants, util
+
+APPID = util.get_conf_value(constants.KEY_OPENWEATHER)
 KELVIN_TO_CELSIUS = 273.15
 
 
@@ -30,13 +32,13 @@ class Meteo():
 
 def get_current_weather():
     request_now = "http://api.openweathermap.org/data/2.5/weather?id=681290&APPID=" + APPID
-    rnow = internet.get_response(request_now)
+    rnow = util.get_response(request_now)
     now = Meteo(rnow, True)
     return now
 
 
 def get_forecast(hours):
     request_next = "http://api.openweathermap.org/data/2.5/forecast?id=681290&APPID=" + APPID
-    rnext = internet.get_response(request_next)
+    rnext = util.get_response(request_next)
     nextw = Meteo(rnext["list"][hours/3 - 1])
     return nextw

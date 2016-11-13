@@ -1,18 +1,18 @@
-'''
-Created on 28 mar. 2016
-
-@author: Paul
-'''
-
+#!/usr/bin/python
 import sys
 import getopt
 from datetime import datetime as dt
 from datetime import timedelta
-import command
-from todo import Todo
-
-from keys import USERS
 from croniter import croniter
+
+from utility import util
+from lib import command
+from utility.todo import Todo
+
+from utility import constants
+
+USERS = util.get_conf_value(constants.KEY_USERS)
+
 
 db = Todo()
 
@@ -87,7 +87,7 @@ else the user can schedule an one-time job directly from the command line
 Example: scheduler.py -c "lights on" -t "2016-05-07 14:43:50"
         '''
         try:
-            opts, args = getopt.getopt(argv, "h:c:t:")
+            opts, _ = getopt.getopt(argv, "h:c:t:")
         except getopt.GetoptError:
             print help_text
             sys.exit(2)
@@ -190,7 +190,6 @@ Example: scheduler.py -c "lights on" -t "2016-05-07 14:43:50"
                         break
                 else:
                     try:
-                        mi, h, d, mo, wd, s = rec.split()
                         itr = croniter(rec, st)
                         nt = itr.get_next(dt)
                         while nt <= et:
