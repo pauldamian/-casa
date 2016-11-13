@@ -1,4 +1,9 @@
-{
+'''
+Created on Jun 25, 2016
+
+@author: damianpa
+'''
+help_text = {
     'show': {'forecast': ('show forecast [hours] - returns the weather predicted in the next [hours]. '
                           'If no argument is provided, it will return the closest prediction (1-3 hours)\
                              For example: show forecast 6'),

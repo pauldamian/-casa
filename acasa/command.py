@@ -4,13 +4,9 @@ Created on 28 mar. 2016
 @author: Paul
 '''
 from datetime import datetime
-from utility import constants, util
+from resources import USERS
 
-USERS = util.get_conf_value(constants.KEY_USERS)
-
-valid_commands = [constants.COMMAND_CANCEL,
-                  constants.COMMAND_SHOW,
-                  constants.COMMAND_LIGHTS]
+valid_commands = ['lights', 'help', 'lock', 'unlock', 'show', 'cancel']
 
 
 def valid_date(date):
@@ -22,7 +18,7 @@ def valid_date(date):
 
 
 class Command:
-
+    #    _command_schedule = {'Mon':[], 'Tue':[], 'Wed':[], 'Thu':[], 'Fri':[], 'Sat':[], 'Sun':[]}
     def __init__(self, cid, order, data, commander, status='NEW', args=None, schedule=None, result=''):
         if (order.lower().split()[0] not in valid_commands) or (order.lower().split()[0] == 'help'):
             self.cid = 0

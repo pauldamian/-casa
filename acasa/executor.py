@@ -3,23 +3,27 @@ Created on 28 mar. 2016
 
 @author: Paul
 '''
-from time import sleep
-
-from utility.todo import Todo
-from utility import util, constants
+from todo import Todo
+import log
 from internet import meteo
+from time import sleep
+from help import help_text
+
 from things import dim
 
 db = Todo()
-defaults = {
-    constants.ARG_FORECAST: 3,
-    constants.ARG_WEATHER: 'city',
-    constants.ARG_TEMPERATURE: 'kitchen',
-    constants.ARG_HUMIDITY: 'kitchen',
-    constants.ARG_COMMANDS: 3
-    }
-
-sensor_location = util.get_sensors_location_by_use()
+defaults = {'forecast': 3,
+            'weather': 'city',
+            'temp': 'kitchen',
+            'hum': 'kitchen',
+            'commands': 3
+            }
+sensor_location = {'temp': ['kitchen', 'outside'],
+                   'hum': ['kitchen', 'outside'],
+                   'pressure': ['outside'],
+                   'weather': ['outside'],
+                   'smoke': ['inside']
+                   }
 
 
 def show(arg):
@@ -30,11 +34,11 @@ def show(arg):
     except IndexError:
         where = defaults[what]
     result = ''
-    if what == constants.ARG_FORECAST:
+    if what == 'forecast':
         when = where
         return forecast(when)
-    elif what == constants.ARG_WEATHER:
-        if where == defaults[constants.ARG_WEATHER]:
+    elif what == 'weather':
+        if where == 'city':
             return forecast(0)
         else:
             if where not in sensor_location[what]:
@@ -45,18 +49,18 @@ def show(arg):
             except (ValueError, TypeError):
                 return "No records available"
             return result + str("%.1f" % temp) + '*C, while humidity reaches ' + str("%.1f" % hum) + '%'
-    elif (what == constants.ARG_TEMPERATURE) or (what == constants.ARG_HUMIDITY):
+    elif (what == 'temp') or (what == 'hum'):
         if where not in sensor_location[what]:
             return "No sensor in that location!"
         try:
             temp, hum = db.get_reading(source=where)
         except (ValueError, TypeError):
             return "No records available"
-        if what == constants.ARG_TEMPERATURE:
+        if what == 'temp':
             return 'Temperature is ' + str("%.1f" % temp) + '*C'
-        elif what == constants.ARG_HUMIDITY:
+        elif what == 'hum':
             return 'Humidity is ' + str("%.1f" % hum) + '%'
-    elif what == constants.ARG_COMMANDS:
+    elif what == 'commands':
         try:
             how_many = int(where)
         except ValueError:
@@ -68,7 +72,7 @@ def show(arg):
         else:
             result += "The following commands will be executed:"
             for com in coms:
-                result += "\n{} {} on {}".format(com.order, com.args, str(com.schedule).split('.')[0])
+                result += "\n" + com.order + " " + com.args + " on " + str(com.schedule).split('.')[0]
         return result
     else:
         if (what in defaults):
@@ -76,9 +80,9 @@ def show(arg):
         elif (where in defaults):
             topic = where
         try:
-            return util.get_help([constants.COMMAND_SHOW][topic])
+            return help_text['show'][topic]
         except KeyError:
-            return util.get_help([constants.COMMAND_HELP])
+            return help_text['help']
 
 
 def lights(intensity):
@@ -95,7 +99,7 @@ def lights(intensity):
         else:
             level = 0
     dim.set_dim_level(level)
-    return "Lights turned {}%.".format(level)
+    return 'Lights turned ' + str(level)
 
 
 def forecast(hours):
@@ -119,6 +123,8 @@ def forecast(hours):
         w = meteo.get_forecast(h)
         prefix = "The weather in %s hours will be " % h
     message = prefix + "%s with a temperature of %s*. " % (w.general, w.temp)
+#    if h != 0:
+#        message = message + "Chances of rain until then: %s" % w.rain
     return message
 
 
@@ -130,29 +136,30 @@ def cancel(args):
 
 
 def execute_command(command):
-    util.log("Command {} will be executed now".format(command.order))
-    com = {constants.COMMAND_SHOW: show,
-           constants.COMMAND_LIGHTS: lights,
-           constants.COMMAND_CANCEL: cancel
+    log.write("Command %s will be executed now" % command.order)
+    com = {'show': show,
+           'lights': lights,
+           'cancel': cancel
            }
     res = com[command.order](command.args)
-    util.log(res)
+    log.write(res)
     db.update_command_result(command.cid, res)
     return res
+#    notify(res, command.commander)
 
 
 def run():
-    util.log('Executor process started')
+    log.write('Executor process started')
     while True:
         commands = db.read_current_commands()
         for command in commands:
-            db.update_command_status(command.cid, constants.STATUS_IN_PROGRESS)
+            db.update_command_status(command.cid, 'IN PROGRESS')
             res = execute_command(command)
             if res is not None:
-                db.update_command_status(command.cid, constants.STATUS_COMPLETED)
+                db.update_command_status(command.cid, 'COMPLETED')
             else:
-                db.update_command_status(command.cid, constants.STATUS_FAILED)
-            if command.order == constants.COMMAND_CANCEL:
+                db.update_command_status(command.cid, 'FAILED')
+            if command.order == 'cancel':
                 break
-            util.log('Command {} executed successfully'.format(command.order))
+            log.write('command %s executed successfully' % command.order)
         sleep(1)

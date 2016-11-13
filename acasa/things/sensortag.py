@@ -3,13 +3,14 @@ Created on Jun 18, 2016
 
 @author: damianpa
 '''
+from os import system
 from time import sleep
 import pexpect
 from bluepy import sensortag
 from bluepy.btle import BTLEException
-from utility import util
+import log
 from thing import Thing
-# import threading
+import threading
 from multiprocessing import Pool
 
 
@@ -28,18 +29,18 @@ class TISensorTag(Thing):
     def init(self):
         global tag
         try:
-            util.log('SENSORTAG: You might have to press the side button to connect.')
+            log.write('SENSORTAG: You might have to press the side button to connect.')
             tag = sensortag.SensorTag(self.mac)
-            util.log('SENSORTAG Connected!')
+            log.write('SENSORTAG Connected!')
             pool = Pool(1)
             pool.apply_async(self.always_on, [tag])
     #         ao = threading.Thread(target=always_on())
     #         ao.daemon = True
     #         ao.start()
-            util.log('AlwaysOn feature activated')
+            log.write('AlwaysOn feature activated')
             return True
         except BTLEException as bte:
-            util.log(bte.message)
+            log.write(bte.message)
             return False
 
     def get_humidity(self):
@@ -79,7 +80,7 @@ class TISensorTag(Thing):
             h = self.get_humidity()
             return t, h, p
         except BTLEException as bte:
-            util.log(bte.message)
+            log.write(bte.message)
             if 'disconnected' or 'connect()' in bte.message:
                 if self.init():
                     self.get_all()
