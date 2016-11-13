@@ -1,6 +1,7 @@
 import RPi.GPIO as gp
 from time import sleep
-import gpio_mapping as gm
+from utility import util
+import constants
  
 """
 Pin Mapping:
@@ -10,10 +11,11 @@ Pin 6 - GND
 Pin 7 - SYNC - PWM
 Pin 11 - GATE - Digital
 """
- 
+
+gm = util.get_sensor_attribute_value(constants.DIMMER, constants.SENSOR_PIN)
 dimming = 100
-AC_LOAD = gm.GATE
-SYNC = gm.SYNC
+AC_LOAD = gm['gate']
+SYNC = gm['sync']
 gp.setwarnings(False)
  
  

@@ -1,8 +1,10 @@
 import sqlite3
 from datetime import datetime
 from time import sleep
-from command import Command
-import log
+from os import path
+
+from lib.command import Command
+from utility import util, constants
 
 
 class Todo:
@@ -10,7 +12,8 @@ class Todo:
     conn = None
 
     def __init__(self):
-        self.conn = sqlite3.connect('laverda.db')
+        db_file = path.join(util.get_conf_value(constants.KEY_ACASA_ROOT), constants.DB_NAME)
+        self.conn = sqlite3.connect(db_file)
         self.curs = self.conn.cursor()
         self.curs.execute('CREATE TABLE IF NOT EXISTS commands \
         (cid INTEGER PRIMARY KEY, message TEXT, data TEXT, schedule TEXT, \
@@ -33,7 +36,7 @@ class Todo:
             sid = int(self.curs.fetchone()[0])
         except TypeError:
             sid = 0
-            log.write("New deployment")
+            util.log("New deployment")
         return sid + 1
 
     def get_latest_id(self):
@@ -42,7 +45,7 @@ class Todo:
             lid = int(self.curs.fetchone()[0])
         except TypeError:
             lid = 0
-            log.write("New deployment")
+            util.log("New deployment")
         return lid
 
     def register_command(self, cid, message, data, commander, status='NEW', schedule=None, result=''):
@@ -57,7 +60,7 @@ class Todo:
             reason = 'Not enough arguments provided for command'
         else:
             return self.insert_command(com), 'Error within the database'
-        log.write(reason)
+        util.log(reason)
         return -1, reason
 
     def insert_command(self, com):
@@ -66,13 +69,13 @@ class Todo:
         try:
             self.curs.execute("INSERT INTO commands VALUES(?, ?, ?, ?, ?, ?, ?);", c)
             self.conn.commit()
-            log.write('Command %s registered successfully' % com.order)
+            util.log('Command %s registered successfully' % com.order)
             return 0
         except sqlite3.IntegrityError as ie:
-            log.write(ie.message)
-            log.write('Command already in the database.')
+            util.log(ie.message)
+            util.log('Command already in the database.')
         except sqlite3.OperationalError as oe:
-            log.write(oe.message)
+            util.log(oe.message)
         return 1
 
     def to_command(self, row):
@@ -98,9 +101,9 @@ class Todo:
             self.conn.commit()
             return 0
         except sqlite3.IntegrityError:
-            log.write('thin primary key violation')
+            util.log('thin primary key violation')
         except sqlite3.OperationalError as oe:
-            log.write(oe.message)
+            util.log(oe.message)
         return 1
 
     def get_reading(self, source='inside'):
@@ -112,7 +115,7 @@ class Todo:
             x = self.curs.fetchone()
             t, h = x
         except TypeError as te:
-            log.write(te.message)
+            util.log(te.message)
             return "No sensor readings recorded!"
         if t is None or h is None:
             raise ValueError
@@ -129,7 +132,7 @@ class Todo:
                 self.update_command_status(cid[0], 'CANCELLED')
             return 0
         except sqlite3.OperationalError as oe:
-            log.write(oe.message)
+            util.log(oe.message)
             return 1
 
     def read_current_commands(self):
@@ -140,7 +143,7 @@ class Todo:
                                          (now,)).fetchall():
                 res.append(self.to_command(row))
         except sqlite3.OperationalError as oe:
-            log.write(oe.message)
+            util.log(oe.message)
         return res
 
     def read_next_commands(self, number):
@@ -150,7 +153,7 @@ class Todo:
                                          (number,)).fetchall():
                 res.append(self.to_command(row))
         except sqlite3.OperationalError as oe:
-            log.write(oe.message)
+            util.log(oe.message)
         return res
 
     def get_completed_commands(self):
@@ -159,7 +162,7 @@ class Todo:
             for row in self.curs.execute("SELECT * FROM commands WHERE status='COMPLETED';").fetchall():
                 res.append(self.to_command(row))
         except sqlite3.OperationalError as oe:
-            log.write(oe.message)
+            util.log(oe.message)
         return res
 
     def update_command_status(self, cid, status):
@@ -167,23 +170,23 @@ class Todo:
         try:
             self.curs.execute('UPDATE commands SET status=? WHERE cid=?', q)
             self.conn.commit()
-            log.write("Command %s was marked as %s" % (cid, status))
+            util.log("Command %s was marked as %s" % (cid, status))
         except sqlite3.OperationalError as oe:
-            log.write(oe.message)
+            util.log(oe.message)
 
     def update_command_result(self, cid, result):
         q = (result, cid)
         try:
             self.curs.execute('UPDATE commands SET result=? WHERE cid=?', q)
             self.conn.commit()
-            log.write("Command %s result was updated to %s" % (cid, result))
+            util.log("Command %s result was updated to %s" % (cid, result))
         except sqlite3.OperationalError as oe:
-            log.write(oe.message)
+            util.log(oe.message)
 
     def delete_command(self, cid):
         try:
             self.curs.execute("DELETE FROM commands WHERE cid=?;", (cid,))
             self.conn.commit()
-            log.write("Command %s was deleted" % str(cid))
+            util.log("Command %s was deleted" % str(cid))
         except sqlite3.OperationalError as oe:
-            log.write(oe.message)
+            util.log(oe.message)

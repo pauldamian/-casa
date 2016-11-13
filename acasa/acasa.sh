@@ -1,4 +1,3 @@
-# gist.github.com/rodw/3345668
 #!/bin/bash
 
 usage() {
@@ -30,21 +29,21 @@ if [[ ${2} ]]; then
     fi
 fi
 
-star() {
+start_component() {
 	echo "Starting ${1} (PID written to ${log_dir}${1}.pid)."
-  	python -c "import ${1}; ${1}.run()" & echo $! > "${log_dir}${1}.pid"
+  	python -c "from lib import ${1}; ${1}.run()" & echo $! > "${log_dir}${1}.pid"
 }
 start() {
   if [ ${PROG} == "acasa" ]; then
-	star executor;
-	star communicator;
-	star reader;
+	start_component executor;
+	start_component communicator;
+	start_component reader;
   else
-	star ${PROG};
+	start_component ${PROG};
   fi
 }
 
-status() {
+status_component() {
   PID=$(cat "${log_dir}${1}.pid");
   if [[ -z "${PID}" ]]; then
     echo "${1} is not running (missing PID)."
@@ -55,17 +54,17 @@ status() {
   fi
 }
 
-stat() {
+status() {
   if [ ${PROG} == "acasa" ]; then
-    status executor
-    status reader
-    status communicator
+    status_component executor
+    status_component reader
+    status_component communicator
   else
-    status ${PROG}
+    status_component ${PROG}
   fi
 }
 
-stop() {
+stop_component() {
   PID=$(cat "${log_dir}${1}.pid");
   PIDFILE=${log_dir}$1.pid
   if [[ -z "${PIDFILE}" ]]; then
@@ -81,14 +80,14 @@ stop() {
 
 }
 
-stp() {
+stop() {
 
   if [ ${PROG} == "acasa" ]; then
-	stop communicator;
-	stop reader;
-	stop executor;
+	stop_component communicator;
+	stop_component reader;
+	stop_component executor;
   else
-	stop ${PROG}
+	stop_component ${PROG}
   fi
 }
 
@@ -98,13 +97,13 @@ case "$1" in
         $1;
         ;;
   restart)
-        stp; sleep 1; start;
+        stop; sleep 1; start;
         ;;
   stop)
-        stp ${PROG};
+        stop ${PROG};
         ;;
   status)
-        stat ${PROG};
+        status ${PROG};
         ;;
   *)
         usage;
