@@ -12,7 +12,7 @@ class Todo:
     conn = None
 
     def __init__(self):
-        db_file = path.join(util.get_conf_value(constants.KEY_ACASA_ROOT), constants.DB_NAME)
+        db_file = path.join(util.get_conf_value(constants.KEY_CONF_PATH), constants.DB_NAME)
         self.conn = sqlite3.connect(db_file)
         self.curs = self.conn.cursor()
         self.curs.execute('CREATE TABLE IF NOT EXISTS commands \
