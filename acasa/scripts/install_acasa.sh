@@ -3,12 +3,14 @@ echo Stopping acasa...
 acasa stop || echo acasa already stopped
 
 DEFAULT_CONF_FILE="/etc/acasa/acasa.conf"
+# Moving up a level
+cd ..
 
 if [[ ${1} == "upgrade" ]]; then
 	CONF_FILE=$DEFAULT_CONF_FILE
 else
 	mv $DEFAULT_CONF_FILE $DEFAULT_CONF_FILE.back
-	CONF_PATH=$(python -c 'import json; print json.load(open("../conf/acasa.conf"))["conf_path"]')
+	CONF_PATH=$(python -c 'import json; print json.load(open("conf/acasa.conf"))["conf_path"]')
 	CONF_FILE=$CONF_PATH/acasa.conf
 	# install packages required by acasa
 	for i in Adafruit-DHT bluepy croniter twython; do
@@ -22,14 +24,20 @@ sed -i "s@/etc/acasa/acasa.conf@${CONF_FILE}@g" utility/util.py
 
 ACASA_ROOT=$(python -c "import json; print json.load(open('"${CONF_FILE//\'/\\\'}"'))['acasa_root']")
 echo Removing old modules...
-rm -rf $ACASA_ROOT;
+rm -rf $ACASA_ROOT
 
 echo Installing acasa into $ACASA_ROOT...
 mkdir -p $ACASA_ROOT
+if [[ ${1} == "upgrade" ]]; then
+	rm -rf conf
+else
+	mkdir -p $CONF_PATH; mv conf $CONF_PATH
+fi
 
 cp -r ./* $ACASA_ROOT
 
 echo Cleaning up...
+
 rm -rf ./*
 
 echo Setting the system PYTHONPATH
