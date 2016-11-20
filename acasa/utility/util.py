@@ -13,7 +13,7 @@ import things.constants as sc
 # DO NOT EDIT THE LINE BELOW
 # IF YOU MODIFY THE LINE BELOW OR THE NAME OF THE MODULE,
 # THEN YOU SHOULD ALSO CHANGE THE INSTALLATION SCRIPT
-CONFIGURATION_FILE_PATH = "/opt/acasa/conf/acasa.conf"
+CONFIGURATION_FILE_PATH = "/etc/acasa/acasa.conf"
 
 def log(text):
     dt = datetime.datetime
