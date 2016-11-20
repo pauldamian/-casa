@@ -41,11 +41,12 @@ echo Cleaning up...
 rm -rf ./*
 
 echo Setting the system PYTHONPATH
+python -c "import lib" || echo "export PYTHONPATH=\"${ACASA_ROOT}:${PYTHONPATH}\"" >> ~/.bashrc
 export PYTHONPATH="${ACASA_ROOT}:${PYTHONPATH}"
-echo "export PYTHONPATH=\"${ACASA_ROOT}:${PYTHONPATH}\"" >> ~/.bashrc
 
 dos2unix $ACASA_ROOT/scripts/scheduler.py
 dos2unix $ACASA_ROOT/acasa.sh
+dos2unix $ACASA_ROOT/watchdog
 chmod +x $ACASA_ROOT/acasa.sh
 chmod +x $ACASA_ROOT/scripts/scheduler.py
 

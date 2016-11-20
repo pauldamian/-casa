@@ -33,11 +33,18 @@ start_component() {
 	echo "Starting ${1} (PID written to ${log_dir}${1}.pid)."
   	python -c "from lib import ${1}; ${1}.run()" & echo $! > "${log_dir}${1}.pid"
 }
+
+start_watchdog() {
+	echo "Starting watchdog process. (PID written to ${log_dir}watchdog.pid)."
+	./watchdog & echo $! > "${log_dir}watchdog.pid"
+}
+
 start() {
   if [ ${PROG} == "acasa" ]; then
 	start_component executor;
 	start_component communicator;
 	start_component reader;
+	start_watchdog;
   else
 	start_component ${PROG};
   fi
@@ -83,6 +90,7 @@ stop_component() {
 stop() {
 
   if [ ${PROG} == "acasa" ]; then
+  	stop_component watchdog;
 	stop_component communicator;
 	stop_component reader;
 	stop_component executor;
