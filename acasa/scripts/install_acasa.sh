@@ -4,7 +4,7 @@ acasa stop || echo acasa already stopped
 
 DEFAULT_CONF_FILE="/etc/acasa/acasa.conf"
 
-if [ ${1} == "upgrade"]; then
+if [[ ${1} == "upgrade" ]]; then
 	CONF_FILE=$DEFAULT_CONF_FILE
 else
 	mv $DEFAULT_CONF_FILE $DEFAULT_CONF_FILE.back
