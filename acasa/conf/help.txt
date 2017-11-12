@@ -1,0 +1,32 @@
+{
+    'show': {'forecast': ('show forecast [hours] - returns the weather predicted in the next [hours]. '
+                          'If no argument is provided, it will return the closest prediction (1-3 hours)\
+                             For example: show forecast 6'),
+            'weather': ('show weather [outside | city] - returns information regarding the current '
+                        'weather conditions (temperature, humidity, possibly a short description). '
+                        'The location can be outside, in case there are specific sensors mounted outside,'
+                        ' or city, in which case it retrieves the information from an Internet location. '
+                        'The city name is configurable only manually and it is set by default to Cluj Napoca\
+                        For example: show weather outside'),
+            'temp': ('show temp [location] - displays the temperature from the sensors installed at '
+                     '[location], which is custom defined by each user\
+                     For example: show temp kitchen'),
+            'hum': ('show hum [location] - displays the humidity from the sensors installed at '
+                    '[location], which is custom defined by each user\
+                     For example: show hum bathroom'),
+            'commands': ('show commands [number]: - returns the next [number] commands that are'
+                         'scheduled for execution. By default, number = 3.\
+                         For example: show commands 5')
+             },
+    'lights': ('lights off | <intensity> | on - turns the lights on or off or sets the desired '
+               'intensity (between 0 and 100)\
+               For example: lights 50'),
+    'cancel': ('cancel <command_name> | all - cancels the next command of type <command_name> '
+               'that is scheduled to be executed, or all commands that have not been executed\
+               For example: cancel lights on'),
+    'help': ('The current set of commands includes:\n'
+             'Show temp | hum | forecast | weather | commands - returns the desired information\n'
+             'Lights off | <intensity> | on - controls the lightning\n'
+             'Cancel <command_name> - cancels next command of type <command_name>\n'
+             'Help [command] - displays this message or specific command help in case command is specified')
+}

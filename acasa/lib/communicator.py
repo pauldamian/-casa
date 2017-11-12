@@ -1,15 +1,12 @@
-'''
-Created on Mar 19, 2016
-
-@author: damianpa
-'''
-from twython import Twython
-from twython.exceptions import TwythonError
 import datetime
 from time import sleep
-from utility import util
-from utility.todo import Todo
-from utility import constants
+from twython import Twython
+from twython.exceptions import TwythonError
+
+from lib import util
+from lib.todo import Todo
+from lib import constants
+from lib import command
 
 K = util.get_conf_value(constants.KEY_TWITTER)
 
@@ -58,18 +55,17 @@ def register_latest_commands():
         new_messages = tweet.get_direct_messages(count=1)
         status = constants.STATUS_NOTIFIED
     for message in new_messages:
-        # Take commands only from authorized users
-        # These users must be stored in a list called USERS in the keys file
-        # print message['sender']['location']
+        username = message['sender']['screen_name']
         text = message['text'].strip().lower()
         if text.split()[0] == 'help':
             text = 'show ' + text
-        username = message['sender']['screen_name']
         data = datetime.datetime.strptime(message['created_at'], '%a %b %d %H:%M:%S +%f %Y')
         mid = max(message['id'], mid)
-        res, reas = db.register_command(mid, text, str(data), username, status)
-        if res != 0:
-            return notify(reas, username)
+        try:
+            cmd = command.Command(text, username, status=status, cid=mid, date=str(data))
+        except ValueError, ve:
+            notify(ve, username)
+        db.insert_command(cmd)
 
 
 def respond():
@@ -83,9 +79,11 @@ def run():
     util.log('Twitter process started')
     i = 1
     while True:
+        # responds every 3 seconds
         respond()
         sleep(3)
         i += 1
         if i == 10:
+            # takes new commands every 30 seconds
             register_latest_commands()
             i = 1

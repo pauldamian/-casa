@@ -1,0 +1,13 @@
+#!/bin/bash
+
+log_dir="/var/log/acasa"
+while true; do
+	for i in communicator executor reader; do
+		PID=$(cat "${log_dir}/$i.pid");
+		if [[ -z /proc/${PID}/exe ]]; then
+			echo "${i} is not running (tested PID: ${PID}). Watchdog will restart it." >> $log_dir/acasa.log
+			./acasa.sh restart $i
+		fi
+	done
+	sleep 30
+done
