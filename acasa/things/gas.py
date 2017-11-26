@@ -4,7 +4,7 @@ Created on 16 iun. 2016
 @author: Paul
 '''
 import RPi.GPIO as gp
-from utility import util
+from lib import util
 import constants
 
 dig_pin = util.get_sensor_attribute_value(constants.MQ2, constants.SENSOR_PIN)

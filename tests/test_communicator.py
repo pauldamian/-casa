@@ -1,13 +1,11 @@
-'''
-Created on Jun 25, 2016
-
-@author: damianpa
-'''
 import unittest
 import minimock
 import sys
-sys.path.insert(0, '../acasa/')
-import communicator
+# sys.path.insert(0, '../acasa/')
+
+from lib import util
+util.CONFIGURATION_FILE_PATH = "../conf/acasa.conf"
+from lib import communicator
 
 
 class Test(unittest.TestCase):
@@ -35,7 +33,6 @@ class Test(unittest.TestCase):
         self.assertEqual(communicator.register_latest_commands(), None)
         minimock.mock('communicator.Twython.get_direct_messages', returns=[])
         self.assertEqual(communicator.register_latest_commands(), None)
-
 
 
 if __name__ == "__main__":

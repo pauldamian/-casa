@@ -5,7 +5,7 @@ Created on 4 apr. 2016
 '''
 import time
 
-from utility import constants, util
+from lib import constants, util
 
 APPID = util.get_conf_value(constants.KEY_OPENWEATHER)
 KELVIN_TO_CELSIUS = 273.15

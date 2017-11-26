@@ -3,7 +3,7 @@ from time import sleep
 from twython import Twython
 from twython.exceptions import TwythonError
 
-from lib import util
+from lib import util, log
 from lib.todo import Todo
 from lib import constants
 from lib import command
@@ -13,7 +13,7 @@ K = util.get_conf_value(constants.KEY_TWITTER)
 tweet = Twython(K['C_KEY'], K['C_SECRET'], K['A_TOKEN'], K['A_SECRET'])
 seen_messages = []
 db = Todo()
-mid = 0 # max id per twitter
+mid = 0  # max id per twitter
 
 
 # def send_help(commander):
@@ -34,10 +34,10 @@ def notify(message, username):
     '''
     try:
         status = tweet.send_direct_message(user=username, text=message)
-        util.log("Successfully sent message with id = " + str(status['id']))
+        log.info("Successfully sent message with id = " + str(status['id']))
         return status['id']
     except TwythonError as te:
-        util.log("Could not send message due to Twython Error: " + te.msg)
+        log.error("Could not send message due to Twython Error: " + te.msg)
     return 0
 
 
@@ -48,7 +48,7 @@ def register_latest_commands():
         try:
             new_messages = tweet.get_direct_messages(since_id=lid)
         except TwythonError as te:
-            util.log(te.message)
+            log.info(te.message)
             return
         status = constants.STATUS_NEW
     else:
@@ -62,21 +62,21 @@ def register_latest_commands():
         data = datetime.datetime.strptime(message['created_at'], '%a %b %d %H:%M:%S +%f %Y')
         mid = max(message['id'], mid)
         try:
-            cmd = command.Command(text, username, status=status, cid=mid, date=str(data))
+            cmd = command.Command(text, username, status=status, c_id=mid, date=str(data))
+            db.insert_command(cmd)
         except ValueError, ve:
             notify(ve, username)
-        db.insert_command(cmd)
 
 
 def respond():
     results = db.get_completed_commands()
     for res in results:
         notify(res.result, res.commander)
-        db.update_command_status(res.cid, constants.STATUS_NOTIFIED)
+        db.update_command(res.cid, "result", constants.STATUS_NOTIFIED)
 
 
 def run():
-    util.log('Twitter process started')
+    log.info('Communicator process started')
     i = 1
     while True:
         # responds every 3 seconds

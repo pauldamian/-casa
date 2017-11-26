@@ -1,32 +1,27 @@
-'''
-Created on 28 mar. 2016
-
-@author: Paul
-'''
 from time import sleep
 
 from lib.todo import Todo
-from lib import util
+from lib import util, log
 from lib import constants
 from lib import reader
 from internet import meteo
-from things import constants as sc
+from things import constants as tc
 
 
 class Executor(object):
 
     defaults = {
         constants.ARG_FORECAST: 3,
-        constants.ARG_WEATHER: 'city',
-        constants.ARG_TEMPERATURE: 'kitchen',
-        constants.ARG_HUMIDITY: 'kitchen',
+        constants.ARG_WEATHER: "city",
+        constants.ARG_TEMPERATURE: "kitchen",
+        constants.ARG_HUMIDITY: "kitchen",
         constants.ARG_COMMANDS: 3
         }
 
     def __init__(self):
         self.db = Todo()
         self.reader = reader.Reader()
-        self.actuators = self.reader.get_things_by_key(sc.SENSOR_TYPE, "actuator")
+        self.actuators = self.reader.get_things_by_key(tc.SENSOR_TYPE, "actuator")
 
     def show(self, *args, **kwargs):
         # Displays sensor readings
@@ -36,7 +31,6 @@ class Executor(object):
         except IndexError:
             where = self.defaults.get(what, "")
 
-        result = ""
         if what == constants.ARG_FORECAST:
             when = where
             return self.forecast(when)
@@ -46,33 +40,41 @@ class Executor(object):
                 value = self.db.get_reading(what, source=where)
             except (ValueError, TypeError):
                 return "No records available"
-            return '%s %s is %.1f' % (where, what, value)
+            return "%s %s is %.1f" % (where, what, value)
 
         elif what == constants.ARG_GAS:
             if self.reader.instant_read(what, where):
                 return "Gas/smoke has been detected by the sensor!"
             else:
                 return "No gas/smoke detected by the sensor."
+
         elif what == constants.ARG_WINDOW:
-            pass
+            return "This command is not implemented at the moment."
+
         elif what == constants.ARG_COMMANDS:
+            result = ""
             try:
                 how_many = int(where)
             except ValueError:
-                result = 'Invalid parameter for commands. Will return the next %s commands.\n' % self.defaults[what]
+                result = "Invalid parameter for commands. Returning the next {} commands.\n".format(
+                    self.defaults.get(what))
                 how_many = self.defaults[what]
-            coms = self.db.read_next_commands(how_many)
-            if len(coms) == 0:
+            cmds = self.db.get_next_commands(how_many)
+            if len(cmds) == 0:
                 result += "There are no commands scheduled"
             else:
                 result += "The following commands will be executed:"
-                for com in coms:
-                    result += "\n{} {} on {}".format(com.order, com.args, str(com.schedule).split('.')[0])
+                for com in cmds:
+                    result += "\n{} {} on {}".format(
+                        com.order, com.args, str(com.schedule).split(".")[0])
+
             return result
+
         else:
-            if (what in self.defaults):
+            topic = "undefined topic"
+            if what in self.defaults:
                 topic = what
-            elif (where in self.defaults):
+            elif where in self.defaults:
                 topic = where
             try:
                 return util.get_help([constants.COMMAND_SHOW][topic])
@@ -94,7 +96,7 @@ class Executor(object):
             elif level < 0:
                 level = 0
         except ValueError:
-            if intensity == 'on':
+            if intensity == "on":
                 level = 100
             else:
                 level = 0
@@ -126,33 +128,39 @@ class Executor(object):
 
     def cancel(self, args):
         if self.db.cancel_command(args) == 0:
-            return 'Command canceled'
+            return "Command canceled"
         else:
-            return 'Error while canceling command'
+            return "Error while canceling command"
 
     def execute_command(self, command):
-        util.log("Command {} will be executed now".format(command.order))
+        log.info("Command {} will be executed now".format(command.order))
         com = {constants.COMMAND_SHOW: self.show,
                constants.COMMAND_LIGHTS: self.lights,
                constants.COMMAND_CANCEL: self.cancel
                }
         res = com[command.order](command.args.split())
-        util.log(res)
-        self.db.update_command_result(command.cid, res)
+        log.info(res)
+        self.db.update_command(command.cid, "result", res)
         return res
 
     def run(self):
-        util.log('Executor process started')
+        log.info("Executor process started")
         while True:
-            commands = self.db.read_current_commands()
+            commands = self.db.get_current_commands()
             for command in commands:
-                self.db.update_command_status(command.cid, constants.STATUS_IN_PROGRESS)
+                self.db.update_command(command.cid, "status", constants.STATUS_IN_PROGRESS)
                 res = self.execute_command(command)
                 if res is not None:
-                    self.db.update_command_status(command.cid, constants.STATUS_COMPLETED)
+                    self.db.update_command(command.cid, "status", constants.STATUS_COMPLETED)
                 else:
-                    self.db.update_command_status(command.cid, constants.STATUS_FAILED)
+                    self.db.update_command(command.cid, "status", constants.STATUS_FAILED)
                 if command.order == constants.COMMAND_CANCEL:
                     break
-                util.log('Command {} executed successfully'.format(command.order))
+                log.info("Command {} executed successfully".format(command.order))
+
             sleep(1)
+
+
+if __name__ == "__main__":
+    executor = Executor()
+    executor.run()

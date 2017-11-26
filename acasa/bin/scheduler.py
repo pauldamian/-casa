@@ -11,13 +11,10 @@ from lib.todo import Todo
 from lib import constants
 from __builtin__ import str
 
-
 USERS = util.get_conf_value(constants.KEY_USERS)
-
+WEEKDAYS = {"Mon": 1, "Tue": 2, "Wed": 3, "Thu": 4, "Fri": 5, "Sat": 6, "Sun": 7}
 
 db = Todo()
-
-weekdays = {'Mon': 1, 'Tue': 2, 'Wed': 3, 'Thu': 4, 'Fri': 5, 'Sat': 6, 'Sun': 7}
 
 
 def generate_dates(start_date, end_date, recurrence):
@@ -35,7 +32,7 @@ def generate_dates(start_date, end_date, recurrence):
     for td in recurrence:
         while date <= end_date:
             dates.append(date)
-            if td == 'monthly':
+            if td == "monthly":
                 try:
                     date = date.replace(month=date.month + 1)
                 except ValueError:
@@ -46,22 +43,22 @@ def generate_dates(start_date, end_date, recurrence):
 
 
 def get_valid_input(inp):
-    '''
+    """
     Checks the custom input for recurrent jobs
     Returns:
         None for * wildcard
         A list of integers, according to the input
-    '''
+    """
     ints = []
-    if inp == '*':
+    if inp == "*":
         return None
     else:
         try:
-            if '-' in inp:
-                s, e = inp.split('-')
+            if "-" in inp:
+                s, e = inp.split("-")
                 ints = range(s, e)
-            elif ',' in inp:
-                ints = [int(i) for i in inp.split(',')]
+            elif "," in inp:
+                ints = [int(i) for i in inp.split(",")]
             else:
                 ints.append(int(inp))
         except ValueError:
@@ -72,9 +69,9 @@ def get_valid_input(inp):
 def main(argv):
     st = None
     user = USERS[0]
-    com = ''
+    com = ""
     if len(sys.argv) > 1:
-        help_text = '''
+        help_text = """
 USAGE: scheduler.py [options]
 
 if options are not provided, then you will go through a text-based interface
@@ -85,56 +82,56 @@ else the user can schedule an one-time job directly from the command line
     -t: schedule time in the following format YYYY-MM-DD HH:MM:SS
 
 Example: scheduler.py -c "lights on" -t "2016-05-07 14:43:50"
-        '''
+        """
         try:
             opts, _ = getopt.getopt(argv, "h:c:t:")
         except getopt.GetoptError:
             print help_text
             sys.exit(2)
         for opt, arg in opts:
-            if opt == '-h':
+            if opt == "-h":
                 print help_text
                 sys.exit()
-            elif opt == '-c':
+            elif opt == "-c":
                 com = arg
-            elif opt == '-t':
+            elif opt == "-t":
                 st = arg
-        if st == 'now' or st is None:
-            st = str(dt.now()).split('.')[0]
+        if st == "now" or st is None:
+            st = str(dt.now()).split(".")[0]
 
         cmd = command.Command(com, user, schedule=st)
         db.insert_command(cmd)
 
     else:
-        print '''
+        print """
     Welcome to the Command Scheduler. This tool enables you to schedule jobs,
     either for one-time or recurrent runs.
-    Begin by choosing one of the available commands from below:'''
+    Begin by choosing one of the available commands from below:"""
         vc = command.valid_commands
-        print '        ' + str(vc)
+        print "        " + str(vc)
         while True:
-            com = raw_input('Type the desired command along with its arguments: ')
+            com = raw_input("Type the desired command along with its arguments: ")
             if com.split()[0] in vc:
                 break
-        print '''
+        print """
     Next, set the date and time for the command execution.
-    Use the following format: 2000-01-30 21:45:50'''
+    Use the following format: 2000-01-30 21:45:50"""
         while True:
-            t = raw_input('Type the desired date: ')
+            t = raw_input("Type the desired date: ")
             st = command.valid_date(t)
             if st is not False:
                 if st > dt.now():
                     break
         while True:
-            once = raw_input('Is this a one-time or a recurrent job? [o/r]: ')
-            if once in ['o', 'r']:
+            once = raw_input("Is this a one-time or a recurrent job? [o/r]: ")
+            if once in ["o", "r"]:
                 break
-        if once == 'o':
+        if once == "o":
             cmd = command.Command(com, user, schedule=st)
             db.insert_command(cmd)
         else:
             while True:
-                ed = raw_input('Please enter the end date: ')
+                ed = raw_input("Please enter the end date: ")
                 try:
                     et = command.valid_date(ed)
                     if et > st:
@@ -143,7 +140,7 @@ Example: scheduler.py -c "lights on" -t "2016-05-07 14:43:50"
                         print "End date is smaller than start date!"
                 except ValueError, ve:
                     print ve
-            print '''
+            print """
         For the recurrence part, you can use keywords as:
         every [minute/hour/day/<weekday_name>/week/month]
         or use the following cron format:
@@ -152,11 +149,11 @@ Example: scheduler.py -c "lights on" -t "2016-05-07 14:43:50"
         Example: to run a command every Sunday at noon:
         every Sunday (after setting the start time to 12:00:00)
         0 12 * * 7 0
-                '''
+                """
             while True:
                 recurrence = []
-                rec = raw_input('Set recurrence: ').lower()
-                if rec.split()[0] == 'every':
+                rec = raw_input("Set recurrence: ").lower()
+                if rec.split()[0] == "every":
                     cate = rec.split()[1]
                     try:
                         increment = int(cate)
@@ -164,32 +161,33 @@ Example: scheduler.py -c "lights on" -t "2016-05-07 14:43:50"
                     except ValueError:
                         increment = 1
                     except IndexError:
-                        print 'You need to provide more arguments (the unit of time, most likely)'
-                    if cate == 'minute':
+                        print "You need to provide more arguments (the unit of time, most likely)"
+
+                    if cate == "minute":
                         recurrence.append(timedelta(minutes=increment))
-                    elif cate == 'hour':
+                    elif cate == "hour":
                         recurrence.append(timedelta(hours=increment))
-                    elif cate == 'day':
+                    elif cate == "day":
                         recurrence.append(timedelta(days=increment))
-                    elif cate == 'month':   # months keyword not supported yet
-                        recurrence.append('monthly')
-                    elif cate[:3].capitalize() in weekdays.keys():
-                        dd = (weekdays[cate[:3].capitalize()] - st.isoweekday()) % 7
+                    elif cate == "month":   # months keyword not supported yet
+                        recurrence.append("monthly")
+                    elif cate[:3].capitalize() in WEEKDAYS.keys():
+                        dd = (WEEKDAYS[cate[:3].capitalize()] - st.isoweekday()) % 7
                         st = st.replace(day=st.day + dd)
                         recurrence.append(timedelta(days=7 * increment))
-                    elif cate == 'week':
+                    elif cate == "week":
                         recurrence.append(timedelta(days=7 * increment))
                     else:
-                        print 'Unsupported unit of time'
+                        print "Unsupported unit of time"
                     if len(recurrence) > 0:
                         dl = generate_dates(st, et, recurrence)
                         for d in dl:
                             try:
                                 cmd = command.Command(com, user, schedule=str(d))
+                                db.insert_command(cmd)
                             except ValueError, ve:
                                 print ve
-                            db.insert_command(cmd)
-                            print '.',
+                            print ".",
                         break
                 else:
                     try:
@@ -198,15 +196,16 @@ Example: scheduler.py -c "lights on" -t "2016-05-07 14:43:50"
                         while nt <= et:
                             try:
                                 cmd = command.Command(com, user, schedule=str(nt))
+                                db.insert_command(cmd)
                             except ValueError, ve:
                                 print ve
-                            db.insert_command(cmd)
                             nt = itr.get_next(dt)
-                            print '.',
+                            print ".",
                         break
                     except ValueError as ve:
                         print ve.message
-    print 'Done'
+    print "Done"
+
 
 if __name__ == "__main__":
     main(sys.argv[1:])

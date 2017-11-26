@@ -20,4 +20,4 @@ OPEN_KEY = "open"
 LIGHT_KEY = "lights"
 # TEMPERATURE_THRESHOLD = 40 # Celsius degrees
 # HUMIDITY_THRESHOLD = 90 # percent
-RECORDING_FREQUENCY = 15 # minutes
+RECORDING_FREQUENCY = 15  # minutes

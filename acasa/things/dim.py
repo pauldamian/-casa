@@ -1,6 +1,6 @@
 import RPi.GPIO as gp
 from time import sleep
-from utility import util
+from lib import util
 import constants
  
 """

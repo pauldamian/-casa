@@ -20,7 +20,7 @@ else
 fi
 
 echo Setting conf file path in util module...
-sed -i "s@/etc/acasa/acasa.conf@${CONF_FILE}@g" utility/util.py
+sed -i "s@/etc/acasa/acasa.conf@${CONF_FILE}@g" lib/util.py
 
 ACASA_ROOT=$(python -c "import json; print json.load(open('"${CONF_FILE//\'/\\\'}"'))['acasa_root']")
 echo Removing old modules...

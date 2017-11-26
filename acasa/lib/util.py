@@ -1,8 +1,3 @@
-'''
-Created on Mar 20, 2016
-
-@author: damianpa
-'''
 import datetime
 import json
 import requests
@@ -10,23 +5,12 @@ from os import path
 
 import constants as const
 import things.constants as sc
+from lib import log
 
 # DO NOT EDIT THE LINE BELOW
 # IF YOU MODIFY THE LINE BELOW OR THE NAME OF THE MODULE,
 # THEN YOU SHOULD ALSO CHANGE THE INSTALLATION SCRIPT
 CONFIGURATION_FILE_PATH = "/etc/acasa/acasa.conf"
-
-
-def log(text):
-    dt = datetime.datetime
-    try:
-        conf_file = path.join(get_conf_value(const.KEY_LOG_PATH),
-                              get_conf_value(const.KEY_LOG_FILE))
-        with open(conf_file, 'a') as f:
-            f.seek(0, 2)
-            f.write(str(dt.now()) + ' ' + text + '\n')
-    except IOError:
-        print text
 
 
 def get_response(request_url):
@@ -38,8 +22,8 @@ def load_things_conf():
                             get_conf_value(const.KEY_CONF_THINGS))
     try:
         return json.load(open(things_conf))
-    except:
-        log("Problem loading {}".format(things_conf))
+    except (IOError, ValueError):
+        log.info("Problem loading {}".format(things_conf))
         return {}
 
 
@@ -106,4 +90,4 @@ def get_sensor_attribute_value(sensor, attribute=None):
         else:
             return all_things[sensor]
     except KeyError:
-        log("Sensor {} does not have a {} attribute".format(sensor, attribute))
+        log.warning("Sensor {} does not have a {} attribute".format(sensor, attribute))

@@ -9,15 +9,16 @@ valid_commands = [constants.COMMAND_CANCEL,
 
 def valid_date(date):
     try:
-        return datetime.strptime(date.split('.')[0], '%Y-%m-%d %H:%M:%S')
+        return datetime.strptime(date.split(".")[0], "%Y-%m-%d %H:%M:%S")
     except ValueError:
         raise ValueError("Invalid schedule time. Please respect the given format.")
 
 
-class Command:
+class Command(object):
 
-    def __init__(self, message, user, args='', schedule=None, date=None, status='NEW', result='', cid=None):
-        self.cid = cid
+    def __init__(self, message, user, args="", schedule=None, date=None, status="NEW",
+                 result="", c_id=None):
+        self.cid = c_id
         self.message = message.lower()
         self.data = date or datetime.now()
         self.user = user
@@ -32,7 +33,7 @@ class Command:
 
     @message.setter
     def message(self, text):
-        if (text.split()[0] in valid_commands):
+        if text.split()[0] in valid_commands:
             self._message = text
         else:
             raise ValueError("Invalid command!")
