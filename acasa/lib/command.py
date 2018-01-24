@@ -1,7 +1,6 @@
 from datetime import datetime
 from lib import constants, util
 
-USERS = util.get_conf_value(constants.KEY_USERS)
 valid_commands = [constants.COMMAND_CANCEL,
                   constants.COMMAND_SHOW,
                   constants.COMMAND_LIGHTS]
@@ -9,7 +8,12 @@ valid_commands = [constants.COMMAND_CANCEL,
 
 def valid_date(date):
     try:
-        return datetime.strptime(date.split(".")[0], "%Y-%m-%d %H:%M:%S")
+        if isinstance(date, str):
+            return datetime.strptime(date.split(".")[0], "%Y-%m-%d %H:%M:%S")
+        elif isinstance(date, datetime):
+            return date
+        else:
+            raise ValueError()
     except ValueError:
         raise ValueError("Invalid schedule time. Please respect the given format.")
 
@@ -17,15 +21,41 @@ def valid_date(date):
 class Command(object):
 
     def __init__(self, message, user, args="", schedule=None, date=None, status="NEW",
-                 result="", c_id=None):
-        self.cid = c_id
+                 result="", cmd_id=None, msg_id=None):
+        """
+
+        :param message:
+        :param user:
+        :param args:
+        :param schedule:
+        :param date:
+        :param status:
+        :param result:
+        :param cmd_id:
+        :param msg_id:
+        """
+        self._cid = cmd_id
         self.message = message.lower()
-        self.data = date or datetime.now()
+        self.date = date or datetime.now()
         self.user = user
         self.args = args
         self.schedule = schedule
         self.status = status
         self.result = result
+        self.msg_id = msg_id
+
+    def to_json(self):
+        return {
+            "_id": self._cid,
+            "message": self.message,
+            "args": self.args,
+            "date": self.date,
+            "user": self.user,
+            "schedule": self.schedule,
+            "status": self.status,
+            "result": self.result,
+            "msg_id": self.msg_id
+        }
 
     @property
     def message(self):
@@ -44,10 +74,11 @@ class Command(object):
 
     @user.setter
     def user(self, username):
-        if username in USERS:
-            self._user = username
-        else:
-            raise ValueError("You are not authorized to perform this command.")
+        self._user = username
+        # if username in util.get_conf_value(constants.KEY_USERS):
+        #     self._user = username
+        # else:
+        #     raise ValueError("You are not authorized to perform this command.")
 
     @property
     def schedule(self):
@@ -59,5 +90,5 @@ class Command(object):
             self._schedule = datetime.now()
         else:
             self._schedule = valid_date(cmd_date)
-            if self.schedule < datetime.now():
-                raise ValueError("Invalid schedule time. Make sure that the date is in the future.")
+            # if self.schedule < datetime.now():
+            #     raise ValueError("Invalid schedule time. Make sure that the date is in the future.")

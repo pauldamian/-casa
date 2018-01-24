@@ -69,3 +69,7 @@ class Reader(object):
                 device.read()
             sleep(60)
             timer += 1
+
+if __name__ == "__main__":
+    reader = Reader()
+    reader.run()

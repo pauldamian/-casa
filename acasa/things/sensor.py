@@ -1,6 +1,3 @@
-'''
-Module that hosts all sensor classes
-'''
 from time import sleep
 from multiprocessing import Pool
 import pexpect
@@ -50,7 +47,7 @@ class DHT(Thing):
 
             sleep(1)
 
-        return {property: value}
+        return {property: value/steps}
 
 
 class Gas(Thing):

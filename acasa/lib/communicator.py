@@ -13,7 +13,7 @@ K = util.get_conf_value(constants.KEY_TWITTER)
 tweet = Twython(K['C_KEY'], K['C_SECRET'], K['A_TOKEN'], K['A_SECRET'])
 seen_messages = []
 db = Todo()
-mid = 0  # max id per twitter
+mid = 0  # max message id from twitter
 
 
 # def send_help(commander):
@@ -38,13 +38,13 @@ def notify(message, username):
         return status['id']
     except TwythonError as te:
         log.error("Could not send message due to Twython Error: " + te.msg)
-    return 0
 
 
 def register_latest_commands():
     global mid
+    # TODO find a way to get only "unread" messages
     lid = max(db.get_latest_id(), mid) # max id / registered commands
-    if(lid > 0):
+    if lid > 0:
         try:
             new_messages = tweet.get_direct_messages(since_id=lid)
         except TwythonError as te:
@@ -54,17 +54,16 @@ def register_latest_commands():
     else:
         new_messages = tweet.get_direct_messages(count=1)
         status = constants.STATUS_NOTIFIED
-    for message in new_messages:
+    for message in new_messages[:3]:
         username = message['sender']['screen_name']
         text = message['text'].strip().lower()
         if text.split()[0] == 'help':
             text = 'show ' + text
         data = datetime.datetime.strptime(message['created_at'], '%a %b %d %H:%M:%S +%f %Y')
-        mid = max(message['id'], mid)
         try:
-            cmd = command.Command(text, username, status=status, c_id=mid, date=str(data))
+            cmd = command.Command(text, username, status=status, date=str(data))
             db.insert_command(cmd)
-        except ValueError, ve:
+        except ValueError as ve:
             notify(ve, username)
 
 
@@ -87,3 +86,6 @@ def run():
             # takes new commands every 30 seconds
             register_latest_commands()
             i = 1
+
+if __name__ == "__main__":
+    run()

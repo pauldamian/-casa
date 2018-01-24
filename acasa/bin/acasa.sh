@@ -31,7 +31,7 @@ fi
 
 start_component() {
 	echo "Starting ${1} (PID written to ${log_dir}${1}.pid)."
-  	python -c "from lib import ${1}; ${1}.run()" & echo $! > "${log_dir}${1}.pid"
+  	python -m lib.${1} & echo $! > "${log_dir}${1}.pid"
 }
 
 start_watchdog() {
