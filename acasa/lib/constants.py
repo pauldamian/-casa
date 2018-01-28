@@ -1,8 +1,3 @@
-'''
-Created on Oct 22, 2016
-
-@author: damianpa
-'''
 KEY_LOG_PATH = "log_path"
 KEY_LOG_FILE = "log_file"
 KEY_CONF_PATH = "conf_path"
@@ -13,8 +8,6 @@ KEY_OPENWEATHER = "appid"
 KEY_USERS = "users"
 KEY_HELP = "help.txt"
 KEY_ACASA_ROOT = "acasa_root"
-
-DB_NAME = "laverda.db"
 
 COMMAND_HELP = "help"
 COMMAND_SHOW = "show"
@@ -35,3 +28,4 @@ STATUS_IN_PROGRESS = "IN PROGRESS"
 STATUS_COMPLETED = "COMPLETED"
 STATUS_FAILED = "FAILED"
 STATUS_NOTIFIED = "NOTIFIED"
+STATUS_NOT_NOTIFIED = "NOT_NOTIFIED"

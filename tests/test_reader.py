@@ -7,7 +7,7 @@ import unittest
 import minimock
 import sys
 from time import sleep
-sys.path.insert(0, '../acasa/')
+sys.path.insert(0, '../acasa/lib/')
 import reader
 
 
@@ -17,7 +17,7 @@ class Test(unittest.TestCase):
         minimock.restore()
 
     def testInsertReadings(self):
-        #minimock.mock('reader.Todo.insert_reading', returns=0)
+        #minimock.mock('reader.db.insert_reading', returns=0)
         self.assertEqual(reader.register_reading('', 0, 0, 0), None)
         s = ('in', 'out', 'afar%', '@$S$')
         t = (1, 1.2, 0, -12)

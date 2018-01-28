@@ -1,6 +1,7 @@
 import RPi.GPIO as gp
 from time import sleep
-from thing import Thing
+from things.thing import Thing
+from lib import log
 
 """
 Pin Mapping:
@@ -12,12 +13,12 @@ Pin 11 - GATE - Digital
 
 
 class ACDimmer(Thing):
-    def __init__(self, name, use, location, pin, tip, save_recordigs=False):
-        Thing.__init__(self, name, use, location, pin, tip, save_recordigs)
+    def __init__(self, name, use, location, pin, type, save_recordings=False):
+        Thing.__init__(self, name, use, location, pin, type, save_recordings)
         self.dimming = 100
-        self.ac_load = self.pin['gate']
-        self.sync = self.pin['sync']
-        self.frequency = 50 # Hz
+        self.ac_load = pin.get("gate")
+        self.sync = pin.get("sync")
+        self.frequency = 50  # Hz
         gp.setwarnings(False)
         gp.setmode(gp.BOARD)
         gp.setup(self.ac_load, gp.OUT)

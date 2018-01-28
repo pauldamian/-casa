@@ -53,7 +53,7 @@ class TestExecutor(unittest.TestCase):
         self.assertEqual("The weather in 3 hours will be ...", executor.show("weather city"))
         self.assertEqual("The weather in 3 hours will be ...", executor.show("weather"))
         for (t, h) in [(12, 34), (-20, -7), (40, 120), (12.121212, 45.67543)]:
-            minimock.mock("executor.Todo.get_reading", returns=(t, h))
+            minimock.mock("executor.db.get_reading", returns=(t, h))
             r = "Outside temperature is %.1f*C, while humidity reaches %.1f%%" % (t, h)
             self.assertEqual(r, executor.show("weather outside"))
             r = "No sensor in that location!\n" + r
@@ -61,7 +61,7 @@ class TestExecutor(unittest.TestCase):
             self.assertEqual(r, executor.show("weather 12"))
             self.assertEqual(r, executor.show("weather #$"))
         for r in [None, "No sensor readings recorded!", "blablacar", (1, 2, 3)]:
-            minimock.mock("executor.Todo.get_reading", returns=r)
+            minimock.mock("executor.db.get_reading", returns=r)
             self.assertEqual(executor.show("weather outside"), "No records available")
 
     def testShowCommands(self):
@@ -71,7 +71,7 @@ class TestExecutor(unittest.TestCase):
         mockom.args = 'something'
         lmock = [mockom]
         for m in [lmock, 2 * lmock, 5 * lmock]:
-            minimock.mock("executor.Todo.read_next_commands", returns=m)
+            minimock.mock("executor.db.read_next_commands", returns=m)
             msg = 'The following commands will be executed:'
             for i in range(len(m)):
                 msg = msg + '\nshow something on 2016-12-12 12:12:12'
@@ -83,15 +83,15 @@ class TestExecutor(unittest.TestCase):
             msg += 'The following commands will be executed:'
             for i in range(executor.defaults['commands']):
                 msg = msg + '\nshow something on 2016-12-12 12:12:12'
-            minimock.mock("executor.Todo.read_next_commands", returns=3 * lmock)
+            minimock.mock("executor.db.read_next_commands", returns=3 * lmock)
             self.assertEqual(executor.show(p), msg)
 
     def testShowTemp(self):
         for r in ["No sensor readings recorded!", "blablacar", (1, 2, 3)]:
-            minimock.mock("executor.Todo.get_reading", returns=r)
+            minimock.mock("executor.db.get_reading", returns=r)
             self.assertEqual(executor.show("temp"), "No records available")
         for (t, h) in [(12, 34), (-20, -7), (40, 120), (12.121212, 45.67543)]:
-            minimock.mock("executor.Todo.get_reading", returns=(t, h))
+            minimock.mock("executor.db.get_reading", returns=(t, h))
             r = 'Temperature is ' + str("%.1f" % t) + '*C'
             self.assertEqual(r, executor.show("temp inside"))
             self.assertEqual(r, executor.show("temp"))
@@ -102,10 +102,10 @@ class TestExecutor(unittest.TestCase):
 
     def testShowHum(self):
         for r in ["No sensor readings recorded!", "blablacar", (1, 2, 3)]:
-            minimock.mock("executor.Todo.get_reading", returns=r)
+            minimock.mock("executor.db.get_reading", returns=r)
             self.assertEqual(executor.show("hum"), "No records available")
         for (t, h) in [(12, 34), (-20, -7), (40, 120), (12.121212, 45.67543)]:
-            minimock.mock("executor.Todo.get_reading", returns=(t, h))
+            minimock.mock("executor.db.get_reading", returns=(t, h))
             r = 'Humidity is ' + str("%.1f" % h) + '%'
             self.assertEqual(r, executor.show("hum inside"))
             self.assertEqual(r, executor.show("hum"))

@@ -1,6 +1,6 @@
 from time import sleep
 
-from lib.todo import Todo
+from lib.db_connector import DBConnector
 from lib import util, log
 from lib import constants
 from lib import reader
@@ -19,17 +19,20 @@ class Executor(object):
         }
 
     def __init__(self):
-        self.db = Todo()
-        self.reader = reader.Reader()
-        self.actuators = self.reader.get_things_by_key(tc.SENSOR_TYPE, "actuator")
+        self.db = DBConnector()
+        self.actuators = util.get_things(type="actuator")
 
     def show(self, *args, **kwargs):
         # Displays sensor readings
+        # Todo see what's broken here (args not passed as expected)
         what = args[0]
+        log.info("What: {}".format(what))
         try:
             where = args[1]
         except IndexError:
             where = self.defaults.get(what, "")
+        except TypeError:
+            return "Don't know what to show!"
 
         if what == constants.ARG_FORECAST:
             when = where
@@ -43,7 +46,7 @@ class Executor(object):
             return "%s %s is %.1f" % (where, what, value)
 
         elif what == constants.ARG_GAS:
-            if self.reader.instant_read(what, where):
+            if reader.Reader.instant_read(what, where):
                 return "Gas/smoke has been detected by the sensor!"
             else:
                 return "No gas/smoke detected by the sensor."
@@ -127,20 +130,25 @@ class Executor(object):
         return message
 
     def cancel(self, args):
-        if self.db.cancel_command(args) == 0:
+        if self.db.cancel_commands(args) == 0:
             return "Command canceled"
         else:
             return "Error while canceling command"
 
     def execute_command(self, command):
-        log.info("Command {} will be executed now".format(command.order))
+        log.info("Command {} will be executed now".format(command.message))
         com = {constants.COMMAND_SHOW: self.show,
                constants.COMMAND_LIGHTS: self.lights,
                constants.COMMAND_CANCEL: self.cancel
                }
-        res = com[command.order](command.args.split())
+        try:
+            res = com[command.message](command.args.split())
+        except KeyError:
+            res = "Unknown command: {}".format(command.message)
+
         log.info(res)
-        self.db.update_command(command.cid, "result", res)
+        self.db.update_command(command.cmd_id, "result", res)
+
         return res
 
     def run(self):
@@ -148,15 +156,15 @@ class Executor(object):
         while True:
             commands = self.db.get_current_commands()
             for command in commands:
-                self.db.update_command(command.cid, "status", constants.STATUS_IN_PROGRESS)
+                self.db.update_command(command.cmd_id, "status", constants.STATUS_IN_PROGRESS)
                 res = self.execute_command(command)
                 if res is not None:
-                    self.db.update_command(command.cid, "status", constants.STATUS_COMPLETED)
+                    self.db.update_command(command.cmd_id, "status", constants.STATUS_COMPLETED)
                 else:
-                    self.db.update_command(command.cid, "status", constants.STATUS_FAILED)
-                if command.order == constants.COMMAND_CANCEL:
+                    self.db.update_command(command.cmd_id, "status", constants.STATUS_FAILED)
+                if command.message == constants.COMMAND_CANCEL:
                     break
-                log.info("Command {} executed successfully".format(command.order))
+                log.info("Command {} executed successfully".format(command.message))
 
             sleep(1)
 

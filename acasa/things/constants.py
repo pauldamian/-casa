@@ -4,7 +4,7 @@ SENSOR_PIN = 'pin'
 SENSOR_LOCATION = 'location'
 SENSOR_MAC = 'MAC'
 SENSOR_CLASS = 'class'
-SENSOR_SAVE_READS = 'save_readings'
+SENSOR_SAVE_READS = 'save_recordings'
 
 DTH11 = "dth11_sensor"
 MQ2 = "mq2_sensor"

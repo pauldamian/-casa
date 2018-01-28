@@ -4,6 +4,7 @@ from datetime import datetime
 from lib.command import Command
 # from lib import util, constants, log
 
+
 class DBConnector(object):
 
     def __init__(self):
@@ -29,7 +30,7 @@ class DBConnector(object):
 
     def get_greatest_property(self, name="_id", default=0):
         try:
-            value = self._commands.find().sort([(name, -1)]).limit(1)[0].get(name)
+            value = self._commands.find().sort([(name, -1)]).limit(1)[0].get(name, default)
         except IndexError:
             print("New deployment")
             value = default
@@ -40,7 +41,7 @@ class DBConnector(object):
         if not cmd.cmd_id:
             cmd.cmd_id = self.get_greatest_property() + 1
 
-        self._commands.insert_one(cmd.to_json())
+        self._commands.insert_one(cmd.get_json())
 
     def get_current_commands(self):
         return [self._decode_command(cmd) for cmd in self._commands.find(
@@ -82,13 +83,14 @@ class DBConnector(object):
         return sum([read.get("value") for read in data])/len(data)
 
 # db = client.admin
-db = DBConnector()
-
+# db = DBConnector()
+#
 # cmd = {
 #     "_id": 102,
 #     "name": "test",
-#     "status": "NEW",
-#     "schedule": datetime.now()
+#     "status": "COMPLETED",
+#     "schedule": datetime.now(),
+#     "result": "Halep a pierdut!"
 # }
 # db._commands.insert_one(cmd)
 # db.update_command(101, "status", "NEW")

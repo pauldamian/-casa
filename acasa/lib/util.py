@@ -1,11 +1,12 @@
-import datetime
 import json
 import requests
 from os import path
 
-import constants as const
-import things.constants as sc
 from lib import log
+import lib.constants as const
+import things.constants as sc
+# keep it here as it is required to load things classes
+from things import sensor, actuator
 
 # DO NOT EDIT THE LINE BELOW
 # IF YOU MODIFY THE LINE BELOW OR THE NAME OF THE MODULE,
@@ -21,10 +22,43 @@ def load_things_conf():
     things_conf = path.join(get_conf_value(const.KEY_CONF_PATH),
                             get_conf_value(const.KEY_CONF_THINGS))
     try:
-        return json.load(open(things_conf))
+        things_dict = json.load(open(things_conf))
+        log.debug("Things defined in {}: {}".format(things_conf, things_dict))
+        return things_dict
     except (IOError, ValueError):
         log.info("Problem loading {}".format(things_conf))
         return {}
+
+
+def get_things(things_dict=None, **kwargs):
+    """
+    Return Thing objects from the things configuration json
+    :param things_dict: The things configuration json. If not set, the default is used.
+    :param kwargs: provide a way of filtering the desired things
+    :return: list of Things
+    """
+    if things_dict is None:
+        things_dict = load_things_conf()
+    things = []
+    for key, thing_dict in things_dict.items():
+        # filter the object
+        for k, v in kwargs.items():
+            if v not in thing_dict.get(k):
+                continue
+
+        cls = thing_dict.get(sc.SENSOR_CLASS)
+        module = thing_dict.get(sc.SENSOR_TYPE)
+        try:
+            thing = getattr(eval(module), cls)(
+                key, thing_dict[sc.SENSOR_USE], location=thing_dict.get(sc.SENSOR_LOCATION),
+                pin=thing_dict.get(sc.SENSOR_PIN, ""), type=module,
+                save_recordings=thing_dict.get(sc.SENSOR_SAVE_READS, False))
+
+            things.append(thing)
+        except Exception as e:
+            log.error("Unable to load {} because {}".format(key, e))
+
+    return things
 
 
 def get_conf_value(key):

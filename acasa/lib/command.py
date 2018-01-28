@@ -1,22 +1,6 @@
 from datetime import datetime
 from lib import constants, util
 
-valid_commands = [constants.COMMAND_CANCEL,
-                  constants.COMMAND_SHOW,
-                  constants.COMMAND_LIGHTS]
-
-
-def valid_date(date):
-    try:
-        if isinstance(date, str):
-            return datetime.strptime(date.split(".")[0], "%Y-%m-%d %H:%M:%S")
-        elif isinstance(date, datetime):
-            return date
-        else:
-            raise ValueError()
-    except ValueError:
-        raise ValueError("Invalid schedule time. Please respect the given format.")
-
 
 class Command(object):
 
@@ -34,19 +18,19 @@ class Command(object):
         :param cmd_id:
         :param msg_id:
         """
-        self._cid = cmd_id
+        self.cmd_id = cmd_id
+        self.args = args
         self.message = message.lower()
         self.date = date or datetime.now()
         self.user = user
-        self.args = args
         self.schedule = schedule
         self.status = status
         self.result = result
         self.msg_id = msg_id
 
-    def to_json(self):
+    def get_json(self):
         return {
-            "_id": self._cid,
+            "_id": self.cmd_id,
             "message": self.message,
             "args": self.args,
             "date": self.date,
@@ -57,16 +41,38 @@ class Command(object):
             "msg_id": self.msg_id
         }
 
+    @staticmethod
+    def get_valid_commands():
+        return [constants.COMMAND_CANCEL,
+                constants.COMMAND_SHOW,
+                constants.COMMAND_LIGHTS
+                ]
+
+    @staticmethod
+    def get_valid_date(date):
+        if isinstance(date, datetime):
+            return date
+        elif isinstance(date, str):
+            try:
+                return datetime.strptime(date.split(".")[0], "%Y-%m-%d %H:%M:%S")
+            except ValueError:
+                pass
+
+        raise ValueError("Invalid schedule time. Please respect the given format.")
+
     @property
     def message(self):
         return self._message
 
     @message.setter
     def message(self, text):
-        if text.split()[0] in valid_commands:
-            self._message = text
+        words = text.split()
+        if len(words) > 1 and self.args is None:
+            self.args = " ".join(words[1:])
+        if words[0] in self.get_valid_commands():
+            self._message = words[0]
         else:
-            raise ValueError("Invalid command!")
+            raise ValueError("Invalid command: {}!".format(text))
 
     @property
     def user(self):
@@ -89,6 +95,6 @@ class Command(object):
         if not cmd_date:
             self._schedule = datetime.now()
         else:
-            self._schedule = valid_date(cmd_date)
+            self._schedule = self.get_valid_date(cmd_date)
             # if self.schedule < datetime.now():
             #     raise ValueError("Invalid schedule time. Make sure that the date is in the future.")

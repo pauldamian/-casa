@@ -22,13 +22,13 @@ class Test(unittest.TestCase):
         communicator.db.delete_command(str(message['id']))
 
     def testRegiterLatestCommands(self):
-        minimock.mock('communicator.Todo.get_latest_id', returns=10)
+        minimock.mock('communicator.db.get_latest_id', returns=10)
         minimock.mock('communicator.Twython.get_direct_messages', returns=[message])
         self.assertEqual(communicator.register_latest_commands(), None)
         minimock.mock('communicator.notify', returns="Could not register command. Try again later")
         self.assertEqual(communicator.register_latest_commands(),
                          "Could not register command. Try again later")
-        minimock.mock('communicator.Todo.register_command', returns=0)
+        minimock.mock('communicator.db.register_command', returns=0)
         minimock.mock('communicator.Twython.get_direct_messages', returns=30 * [message])
         self.assertEqual(communicator.register_latest_commands(), None)
         minimock.mock('communicator.Twython.get_direct_messages', returns=[])

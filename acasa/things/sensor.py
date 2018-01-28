@@ -1,19 +1,16 @@
 from time import sleep
 from multiprocessing import Pool
-import pexpect
-from bluepy import sensortag
-from bluepy.btle import BTLEException
+
 import RPi.GPIO as gp
-import Adafruit_DHT as dht
 
 from lib import log
-from thing import Thing
+from things.thing import Thing
 from things import constants
 
 
 class MagneticSensor(Thing):
-    def __init__(self, name, use, pin, location=None, tip="sensor", save_readings=False):
-        Thing.__init__(self, name, use, pin, location, tip, save_readings)
+    def __init__(self, name, use, pin, location=None, type="sensor", save_recordings=False):
+        Thing.__init__(self, name, use, pin, location, type, save_recordings)
         gp.setmode(gp.BOARD)
         gp.setup(self.pin, gp.IN, pull_up_down=gp.PUD_DOWN)
         gp.add_event_detect(self.pin, gp.RISING, callback=self._set_open)
@@ -32,10 +29,17 @@ class MagneticSensor(Thing):
 
 
 class DHT(Thing):
-    def __init__(self, name, use, pin, location=None, tip="sensor", save_readings=False):
-        Thing.__init__(self, name, use, pin, location, tip, save_readings)
+
+    def __init__(self, name, use, pin, location=None, type="sensor", save_recordings=False):
+        Thing.__init__(self, name, use, pin, location, type, save_recordings)
 
     def read(self, property, steps=3):
+        try:
+            import Adafruit_DHT as dht
+        except ImportError as ie:
+            log.error(ie)
+            raise EnvironmentError(
+                "{} requires Adafruit_DHT to function!".format(self.__class__.__name__))
         # Returns the averaged property value: temperature or humidity
         value = 0.0
         for _ in range(steps):
@@ -52,8 +56,8 @@ class DHT(Thing):
 
 class Gas(Thing):
 
-    def __init__(self, name, use, pin, location=None, tip="sensor", save_readings=False):
-        Thing.__init__(self, name, use, pin, location, tip, save_readings)
+    def __init__(self, name, use, pin, location=None, type="sensor", save_recordings=False):
+        Thing.__init__(self, name, use, pin, location, type, save_recordings)
         gp.setmode(gp.BOARD)
         gp.setup(self.pin, gp.IN, pull_up_down=gp.PUD_DOWN)
         gp.add_event_detect(self.pin, gp.RISING, callback=self._set_smoke)
@@ -72,12 +76,21 @@ class Gas(Thing):
 
 
 class TISensorTag(Thing):
-    def __init__(self, name, use, pin, location=None, tip="sensor", save_readings=False):
-        Thing.__init__(self, name, use, location=location, tip=tip, save_readings=save_readings)
+
+    def __init__(self, name, use, pin, location=None, type="sensor", save_recordings=False):
+        Thing.__init__(self, name, use, location=location, type=type, save_recordings=save_recordings)
         self.mac = pin  # SensorTag MAC address
         self.connect()
 
     def connect(self):
+        try:
+            from bluepy import sensortag
+            from bluepy.btle import BTLEException
+            self.exception = BTLEException
+        except ImportError as ie:
+            log.error(ie)
+            raise EnvironmentError("{} requires bluepy to function!".format(self.__class__.__name__))
+
         try:
             log.info('SENSORTAG: You might have to press the side button to connect.')
             self.tag = sensortag.SensorTag(self.mac)
@@ -87,7 +100,7 @@ class TISensorTag(Thing):
             log.info('AlwaysOn feature activated')
 
         except BTLEException as bte:
-            log.info(bte.message)
+            log.error(bte.message)
 
     def _always_on(self):
         while True:
@@ -108,7 +121,7 @@ class TISensorTag(Thing):
             for _ in range(3):
                 value += sensor.read()[index]
             sensor.disable()
-        except BTLEException as bte:
+        except self.exception as bte:
             log.info(bte.message)
             if 'disconnected' or 'connect()' in bte.message:
                 if self.connect():

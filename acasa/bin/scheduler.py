@@ -7,14 +7,11 @@ from croniter import croniter
 
 from lib import util
 from lib import command
-from lib.todo import Todo
+from lib.db_connector import DBConnector
 from lib import constants
-from __builtin__ import str
 
 USERS = util.get_conf_value(constants.KEY_USERS)
 WEEKDAYS = {"Mon": 1, "Tue": 2, "Wed": 3, "Thu": 4, "Fri": 5, "Sat": 6, "Sun": 7}
-
-db = Todo()
 
 
 def generate_dates(start_date, end_date, recurrence):
@@ -62,12 +59,13 @@ def get_valid_input(inp):
             else:
                 ints.append(int(inp))
         except ValueError:
-            print "Cannot read input"
+            print("Cannot read input")
         return ints
 
 
 def main(argv):
     st = None
+    db = DBConnector()
     user = USERS[0]
     com = ""
     if len(sys.argv) > 1:
@@ -86,11 +84,11 @@ Example: scheduler.py -c "lights on" -t "2016-05-07 14:43:50"
         try:
             opts, _ = getopt.getopt(argv, "h:c:t:")
         except getopt.GetoptError:
-            print help_text
+            print(help_text)
             sys.exit(2)
         for opt, arg in opts:
             if opt == "-h":
-                print help_text
+                print(help_text)
                 sys.exit()
             elif opt == "-c":
                 com = arg
@@ -103,22 +101,22 @@ Example: scheduler.py -c "lights on" -t "2016-05-07 14:43:50"
         db.insert_command(cmd)
 
     else:
-        print """
+        print("""
     Welcome to the Command Scheduler. This tool enables you to schedule jobs,
     either for one-time or recurrent runs.
-    Begin by choosing one of the available commands from below:"""
-        vc = command.valid_commands
-        print "        " + str(vc)
+    Begin by choosing one of the available commands from below:""")
+        vc = command.Command.get_valid_commands()
+        print("        " + str(vc))
         while True:
             com = raw_input("Type the desired command along with its arguments: ")
             if com.split()[0] in vc:
                 break
-        print """
+        print("""
     Next, set the date and time for the command execution.
-    Use the following format: 2000-01-30 21:45:50"""
+    Use the following format: 2000-01-30 21:45:50""")
         while True:
             t = raw_input("Type the desired date: ")
-            st = command.valid_date(t)
+            st = command.Command.get_valid_date(t)
             if st is not False:
                 if st > dt.now():
                     break
@@ -133,14 +131,14 @@ Example: scheduler.py -c "lights on" -t "2016-05-07 14:43:50"
             while True:
                 ed = raw_input("Please enter the end date: ")
                 try:
-                    et = command.valid_date(ed)
+                    et = command.Command.get_valid_date(ed)
                     if et > st:
                         break
                     else:
-                        print "End date is smaller than start date!"
-                except ValueError, ve:
-                    print ve
-            print """
+                        print("End date is smaller than start date!")
+                except ValueError as ve:
+                    print(ve)
+            print("""
         For the recurrence part, you can use keywords as:
         every [minute/hour/day/<weekday_name>/week/month]
         or use the following cron format:
@@ -149,7 +147,7 @@ Example: scheduler.py -c "lights on" -t "2016-05-07 14:43:50"
         Example: to run a command every Sunday at noon:
         every Sunday (after setting the start time to 12:00:00)
         0 12 * * 7 0
-                """
+                """)
             while True:
                 recurrence = []
                 rec = raw_input("Set recurrence: ").lower()
@@ -161,7 +159,7 @@ Example: scheduler.py -c "lights on" -t "2016-05-07 14:43:50"
                     except ValueError:
                         increment = 1
                     except IndexError:
-                        print "You need to provide more arguments (the unit of time, most likely)"
+                        print("You need to provide more arguments (the unit of time, most likely)")
 
                     if cate == "minute":
                         recurrence.append(timedelta(minutes=increment))
@@ -178,16 +176,16 @@ Example: scheduler.py -c "lights on" -t "2016-05-07 14:43:50"
                     elif cate == "week":
                         recurrence.append(timedelta(days=7 * increment))
                     else:
-                        print "Unsupported unit of time"
+                        print("Unsupported unit of time")
                     if len(recurrence) > 0:
                         dl = generate_dates(st, et, recurrence)
                         for d in dl:
                             try:
                                 cmd = command.Command(com, user, schedule=str(d))
                                 db.insert_command(cmd)
-                            except ValueError, ve:
-                                print ve
-                            print ".",
+                            except ValueError as ve:
+                                print(ve)
+                            print("."),
                         break
                 else:
                     try:
@@ -197,14 +195,14 @@ Example: scheduler.py -c "lights on" -t "2016-05-07 14:43:50"
                             try:
                                 cmd = command.Command(com, user, schedule=str(nt))
                                 db.insert_command(cmd)
-                            except ValueError, ve:
-                                print ve
+                            except ValueError as ve:
+                                print(ve)
                             nt = itr.get_next(dt)
-                            print ".",
+                            print("."),
                         break
                     except ValueError as ve:
-                        print ve.message
-    print "Done"
+                        print(ve.message)
+    print("Done")
 
 
 if __name__ == "__main__":

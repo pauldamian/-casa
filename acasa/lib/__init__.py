@@ -1,7 +1,11 @@
 import logging as log
 from os import path
 
-from util import get_conf_value, const
+from lib.util import get_conf_value, const
 
 log_file = path.join(get_conf_value(const.KEY_LOG_PATH), get_conf_value(const.KEY_LOG_FILE))
-log.basicConfig(format="%(asctime) %(levelname)s:%(message)s", level=log.DEBUG, filename=log_file)
+log.basicConfig(level=log.DEBUG,
+                format='%(asctime)s %(levelname)-7s: %(message)s',
+                datefmt='%d-%m %H:%M:%S',
+                filename=log_file
+                )
